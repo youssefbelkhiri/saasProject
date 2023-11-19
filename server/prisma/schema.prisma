@@ -9,7 +9,48 @@ datasource db {
 
 
 model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
+  id         Int      @id @default(autoincrement()) @map(name: "user_id")
+  email      String   @unique
+  first_name String?
+  last_name  String?
+  phone      String?
+  password   String?
+  userPlans  UserPlan[]
 }
+model Plan {
+  id          Int       @id @default(autoincrement()) @map(name: "plan_id")
+  plan_name   String
+  description String
+  features    PlanFeature[]
+  userPlans   UserPlan[]
+}
+model UserPlan {
+  id Int  @id @default(autoincrement())
+  user_id     Int       @map(name: "user_id")
+  plan_id     Int       @map(name: "plan_id")
+  date_start  DateTime
+  date_end    DateTime
+  price       Decimal
+
+  user        User      @relation(fields: [user_id], references: [id])
+  plan        Plan      @relation(fields: [plan_id], references: [id])
+
+}
+
+
+model Feature {
+  id          Int       @id @default(autoincrement()) @map(name: "feature_id")
+  feature_name String
+  description String
+  plans       PlanFeature[]
+}
+
+model PlanFeature {
+  id Int  @id @default(autoincrement())
+  plan_id     Int       @map(name: "plan_id")
+  feature_id  Int       @map(name: "feature_id")
+  plan        Plan      @relation(fields: [plan_id], references: [id])
+  feature     Feature   @relation(fields: [feature_id], references: [id])
+
+}
+
