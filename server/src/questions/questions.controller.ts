@@ -20,9 +20,10 @@ export class QuestionsController {
     return await this.questionsService.getQuestionById(id);
   }
 
+
   @Post()
-  async createQuestion(@Body() questionData: CreateQuestionDto) {
-    const createdQuestion = await this.questionsService.createQuestion(questionData);
+  async createQuestion(@Body() CreateQuestionDto:CreateQuestionDto) {
+    const createdQuestion = await this.questionsService.createQuestion(CreateQuestionDto);
     return createdQuestion;
   }
 

@@ -34,4 +34,10 @@ export class CreateQuestionDto {
   @ValidateNested({ each: true })
   @Type(() => CreateOptionDto)
   options: CreateOptionDto[];
+
+  @ValidateNested({ each: true })
+  @IsInt()
+  exam_id:number;
+
+
 }
