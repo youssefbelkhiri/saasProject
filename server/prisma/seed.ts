@@ -43,7 +43,7 @@ async function main() {
     where: { id: 1 },
     update: {},
     create: {
-      user_id: 2,
+      user_id: 1,
       plan_id: 1,
       date_start: '2023-01-01T00:00:00Z',
       date_end: '2023-12-31T23:59:59Z',

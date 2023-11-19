@@ -11,5 +11,5 @@
   `yarn dev`
 
 3. Run together:  
-   `cd server`
+   `cd server`  
   ` yarn start:together`

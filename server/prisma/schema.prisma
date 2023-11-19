@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
   id         Int      @id @default(autoincrement()) @map(name: "user_id")
   email      String   @unique
@@ -54,3 +53,21 @@ model PlanFeature {
 
 }
 
+
+model Questions {
+  question_id Int @id @default(autoincrement()) 
+  questionOrder Int
+  content String
+  difficulty String
+  points Int
+  options Options[]
+}
+
+model Options {
+  option_id Int @id @default(autoincrement()) 
+  optionOrder Int
+  option String
+  correct Boolean
+  question Questions @relation(fields: [questionId], references: [question_id])
+  questionId  Int 
+}

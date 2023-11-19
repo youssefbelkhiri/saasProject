@@ -17,7 +17,7 @@ export class AppController {
   constructor(private authService: AuthService) {}
 
   @Post('auth/register')
-  async register(@Body() body) {
+  async register(@Body(new ValidationPipe()) body) {
     return this.authService.register(body);
   }
 
