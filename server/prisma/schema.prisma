@@ -31,7 +31,6 @@ model UserPlan {
   date_start  DateTime
   date_end    DateTime
   price       Decimal
-
   user        User      @relation(fields: [user_id], references: [id])
   plan        Plan      @relation(fields: [plan_id], references: [id])
 
@@ -86,3 +85,4 @@ model Options {
   question Questions @relation(fields: [questionId], references: [question_id])
   questionId  Int 
 }
+
