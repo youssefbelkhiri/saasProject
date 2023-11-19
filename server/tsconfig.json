@@ -17,5 +17,7 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "include": ["src/**/*.ts", "prisma/**/*.ts"], // Include the Prisma generated types
+  "exclude": ["node_modules"]
 }
