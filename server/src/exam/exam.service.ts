@@ -7,9 +7,7 @@ import { Prisma } from '@prisma/client';
 export class ExamService {
     constructor(private prisma:PrismaService){}
     async findExams(){
-        const exams = await this.prisma.exam.findMany({
-
-        })
+        return await this.prisma.exam.findMany({})
     }
     async findExam(id:number){
         const exam = await this.prisma.exam.findUnique({

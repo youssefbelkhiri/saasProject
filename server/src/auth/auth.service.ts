@@ -3,17 +3,17 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { AuthEntity } from './entity/auth.entity';
 import { PrismaService } from './../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
+import { UsersAuthService } from './users-auth.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userservice: UsersService,
+    private userservice: UsersAuthService,
     private jwtService: JwtService,
     private prisma: PrismaService,
   ) {}

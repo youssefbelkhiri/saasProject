@@ -50,6 +50,86 @@ async function main() {
       price: 29.99,
     },
   });
+
+  const exam1 = await prisma.exam.create({
+    data: {
+      name: 'History Exam',
+      exam_language: 'English',
+      description: 'Test students math skills',
+      exam_time: 60.0, 
+      total_point: 20,
+      author: {
+        connect: { id: user1.id },
+      },
+    },
+  });
+
+  for (let i = 1; i <= 4; i++) {
+    const question = await prisma.questions.create({
+      data: {
+        questionOrder: i,
+        content: `Question ${i}  Math Exam`,
+        difficulty: 'Easy',
+        points: 5,
+        examR: {
+          connect: { exam_id: exam1.exam_id },
+        },
+      },
+    });
+
+    for (let j = 1; j <= 3; j++) {
+      await prisma.options.create({
+        data: {
+          optionOrder: j,
+          option: `Option ${j} for Question ${i}`,
+          correct: j === 1, 
+          question: {
+            connect: { question_id: question.question_id },
+          },
+        },
+      });
+    }
+  }
+
+  const exam2 = await prisma.exam.create({
+    data: {
+      name: 'Science Exam',
+      exam_language: 'French',
+      description: 'Science Exam Description',
+      exam_time: 60.0, 
+      total_point: 20,
+      author: {
+        connect: { id: user1.id },
+      },
+    },
+  });
+
+  for (let i = 1; i <= 4; i++) {
+    const question = await prisma.questions.create({
+      data: {
+        questionOrder: i,
+        content: `Question ${i}  Science Exam`,
+        difficulty: 'Hard',
+        points: 5,
+        examR: {
+          connect: { exam_id: exam2.exam_id },
+        },
+      },
+    });
+
+    for (let j = 1; j <= 3; j++) {
+      await prisma.options.create({
+        data: {
+          optionOrder: j,
+          option: `Option ${j} for Question ${i}`,
+          correct: j === 2, 
+          question: {
+            connect: { question_id: question.question_id },
+          },
+        },
+      });
+    }
+  }
 }
 main()
   .catch((e) => {
