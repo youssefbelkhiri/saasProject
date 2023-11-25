@@ -15,6 +15,7 @@ model User {
   phone      String?
   password   String?
   userPlans  UserPlan[]
+  exams Exam[]
 }
 model Plan {
   id          Int       @id @default(autoincrement()) @map(name: "plan_id")
@@ -54,6 +55,18 @@ model PlanFeature {
 }
 
 
+model Exam {
+  exam_id    Int     @default(autoincrement()) @id
+  name  String?
+  exam_language String
+  description String?
+  exam_time Float
+  total_point Float
+  author   User @relation(fields: [user_id], references: [id])
+  user_id Int 
+  questions Questions[]
+}
+
 model Questions {
   question_id Int @id @default(autoincrement()) 
   questionOrder Int
@@ -61,6 +74,8 @@ model Questions {
   difficulty String
   points Int
   options Options[]
+  examR   Exam @relation(fields: [exam_id], references: [exam_id])
+  exam_id Int 
 }
 
 model Options {

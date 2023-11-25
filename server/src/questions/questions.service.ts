@@ -27,15 +27,19 @@ export class QuestionsService {
     return question;
   }
 
-  async createQuestion(questionData: CreateQuestionDto): Promise<Questions> {
+  async createQuestion(CreateQuestionDto:CreateQuestionDto) {
+    
     return await this.prisma.questions.create({
       data: {
-        ...questionData,
-        options: {
-          create: questionData.options,
+        ...CreateQuestionDto,
+        options:{
+          createMany:{
+            data:CreateQuestionDto.options
+          }
         }
       },
-    });
+    })
+    
   }
 
 
