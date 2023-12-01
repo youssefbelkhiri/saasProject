@@ -16,6 +16,7 @@ model User {
   password   String?
   userPlans  UserPlan[]
   exams Exam[]
+  groups Groups[]
 }
 model Plan {
   id          Int       @id @default(autoincrement()) @map(name: "plan_id")
@@ -64,6 +65,7 @@ model Exam {
   author   User @relation(fields: [user_id], references: [id])
   user_id Int 
   questions Questions[]
+  groups Groups[]
 }
 
 model Questions {
@@ -86,3 +88,19 @@ model Options {
   questionId  Int 
 }
 
+model Groups {
+  group_id Int @id @default(autoincrement()) @map("group_id")
+  name String
+  user_id Int
+  user User @relation(fields: [user_id], references: [id])
+  students  Students[]
+  exam Exam[]
+}
+
+model Students {
+  student_id Int @id @default(autoincrement()) @map("student_id")
+  first_name String
+  last_name String
+  student_number String
+  groups  Groups[]
+}

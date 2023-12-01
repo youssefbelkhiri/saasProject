@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ExamService } from './exam.service';
-import { ExamDto } from './dto';
+import { ExamDto, UpdateExamDto } from './dto';
 import { Prisma } from '@prisma/client';
 
 @Controller('exams')
@@ -23,8 +23,8 @@ export class ExamController {
         return this.examService.createExam(dto);
     }
     @Patch(':id')
-    updateExam(@Param('id') id: number,@Body() update_exam:Prisma.ExamUpdateInput){
-        return this.examService.updateExam(id,update_exam);
+    updateExam(@Param('id') id: number,@Body() examDto: UpdateExamDto){
+        return this.examService.updateExam(id,examDto);
     }
     @Delete(':id')
     deleteExam(@Param('id') id: number){

@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { PrismaClient } from '@prisma/client';
+import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
 
@@ -51,6 +52,48 @@ async function main() {
     },
   });
 
+  const group1 = await prisma.groups.create({
+    data: {
+      name: 'Science Grp 1',
+      user_id: user1.id
+    },
+  });
+
+  const group2 = await prisma.groups.create({
+    data: {
+      name: 'Science Grp 2',
+      user_id: user1.id
+    },
+  });
+
+  for (let i = 1; i <= 10; i++) {
+    await prisma.students.create({
+      data: {
+        first_name: faker.person.firstName(),
+        last_name: faker.person.lastName(),
+        student_number: faker.string.alphanumeric(8),
+        groups: {
+          connect: { group_id: group1.group_id },
+        },
+      },
+    });
+  }
+
+  for (let i = 1; i <= 10; i++) {
+    await prisma.students.create({
+      data: {
+        first_name: faker.person.firstName(),
+        last_name: faker.person.lastName(),
+        student_number: faker.string.alphanumeric(8),
+        groups: {
+          connect: [{
+            group_id: group2.group_id,
+          },]
+        },
+      },
+    });
+  }
+
   const exam1 = await prisma.exam.create({
     data: {
       name: 'History Exam',
@@ -60,6 +103,9 @@ async function main() {
       total_point: 20,
       author: {
         connect: { id: user1.id },
+      },
+      groups: {
+        connect: { group_id: group1.group_id },
       },
     },
   });
@@ -101,6 +147,12 @@ async function main() {
       author: {
         connect: { id: user1.id },
       },
+      groups: {
+        connect: [
+          { group_id: group1.group_id },
+          { group_id: group2.group_id },
+        ],
+      },
     },
   });
 
@@ -131,6 +183,7 @@ async function main() {
     }
   }
 }
+
 main()
   .catch((e) => {
     process.exit(1);
