@@ -48,7 +48,7 @@ export class EmailConfirmationService {
     const url = `${this.configService.get(
       'EMAIL_CONFIRMATION_URL',
     )}?token=${token}`;
-    const text = `to confirm your email click here:${url}`;
+    const text = `to confirm your email click here:<a href=${url}/>`;
     return this.emailService.sendMail({
       to: emailver,
       subject: 'email confirmation',
