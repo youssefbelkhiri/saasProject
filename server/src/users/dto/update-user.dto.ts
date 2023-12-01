@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { IsString, MinLength, IsOptional } from 'class-validator';
 
 export class UpdateUserDto {

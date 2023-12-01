@@ -13,7 +13,7 @@ async function main() {
       last_name: 'belkhiri',
       email: 'youssef.bel3231@gmail.com',
       phone: '0681751539',
-      password: '123',
+      password: '123456',
     },
   });
   const plan1 = await prisma.plan.upsert({
@@ -99,7 +99,7 @@ async function main() {
       name: 'History Exam',
       exam_language: 'English',
       description: 'Test students math skills',
-      exam_time: 60.0, 
+      exam_time: 60.0,
       total_point: 20,
       author: {
         connect: { id: user1.id },
@@ -128,7 +128,7 @@ async function main() {
         data: {
           optionOrder: j,
           option: `Option ${j} for Question ${i}`,
-          correct: j === 1, 
+          correct: j === 1,
           question: {
             connect: { question_id: question.question_id },
           },
@@ -142,7 +142,7 @@ async function main() {
       name: 'Science Exam',
       exam_language: 'French',
       description: 'Science Exam Description',
-      exam_time: 60.0, 
+      exam_time: 60.0,
       total_point: 20,
       author: {
         connect: { id: user1.id },
@@ -174,7 +174,7 @@ async function main() {
         data: {
           optionOrder: j,
           option: `Option ${j} for Question ${i}`,
-          correct: j === 2, 
+          correct: j === 2,
           question: {
             connect: { question_id: question.question_id },
           },

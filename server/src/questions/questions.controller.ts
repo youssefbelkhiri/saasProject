@@ -1,10 +1,18 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { Prisma, Questions } from '@prisma/client';
-import {CreateQuestionDto} from './dto/create-question.dto'
+import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PormptQuestion } from './dto/prompt-question.dto';
-
 
 @Controller('questions')
 export class QuestionsController {
@@ -20,25 +28,31 @@ export class QuestionsController {
     return await this.questionsService.getQuestionById(id);
   }
 
-
   @Post()
-  async createQuestion(@Body() CreateQuestionDto:CreateQuestionDto) {
-    const createdQuestion = await this.questionsService.createQuestion(CreateQuestionDto);
+  async createQuestion(@Body() CreateQuestionDto: CreateQuestionDto) {
+    const createdQuestion =
+      await this.questionsService.createQuestion(CreateQuestionDto);
     return createdQuestion;
   }
 
-  @Post("/gen")
+  @Post('/gen')
   async genQuestion(@Body() question: PormptQuestion) {
-    return this.questionsService.genQuestion(question)
+    return this.questionsService.genQuestion(question);
   }
 
   @Patch('/option/:id')
-  async updateOption(@Param('id') id: number, @Body() optionData: Prisma.OptionsUpdateInput) {
+  async updateOption(
+    @Param('id') id: number,
+    @Body() optionData: Prisma.OptionsUpdateInput,
+  ) {
     return await this.questionsService.updateOption(id, optionData);
   }
 
   @Patch(':id')
-  async updateQuestion(@Param('id') id: number, @Body() questionData: UpdateQuestionDto) {
+  async updateQuestion(
+    @Param('id') id: number,
+    @Body() questionData: UpdateQuestionDto,
+  ) {
     return this.questionsService.updateQuestion(id, questionData);
   }
 
@@ -51,5 +65,4 @@ export class QuestionsController {
   async deleteQuestion(@Param('id') id: number) {
     return this.questionsService.deleteQuestion(id);
   }
-
 }

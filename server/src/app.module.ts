@@ -9,10 +9,11 @@ import { StudentsService } from './students/students.service';
 import { GroupsController } from './groups/groups.controller';
 import { GroupsModule } from './groups/groups.module';
 import { StudentsModule } from './students/students.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, PrismaModule, QuestionsModule, ExamModule, GroupsModule, StudentsModule],
-  controllers: [GroupsController],
-  providers: [GroupsService, StudentsService],
+  imports: [AuthModule, UsersModule, PrismaModule, QuestionsModule, ExamModule, EmailModule],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
