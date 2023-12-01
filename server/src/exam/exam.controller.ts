@@ -23,8 +23,8 @@ export class ExamController {
         return this.examService.createExam(dto);
     }
     @Patch(':id')
-    updateExam(@Param('id') id: number){
-        return this.examService.findExam(id);
+    updateExam(@Param('id') id: number,@Body() update_exam:Prisma.ExamUpdateInput){
+        return this.examService.updateExam(id,update_exam);
     }
     @Delete(':id')
     deleteExam(@Param('id') id: number){

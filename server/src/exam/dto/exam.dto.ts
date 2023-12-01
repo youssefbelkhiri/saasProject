@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ValidateNested } from "class-validator";
+import { IsInt, ValidateNested } from "class-validator";
 import { CreateQuestionDto } from '../../questions/dto/create-question.dto'
 
 export class ExamDto{
@@ -9,7 +9,13 @@ export class ExamDto{
     exam_time: number;
     total_points: number;
 
-//     @ValidateNested({ each: true })
+//   @ValidateNested({ each: true })
 //   @Type(() => CreateQuestionDto)
 //   questions: CreateQuestionDto[];
+
+
+//   @ValidateNested({ each: true })
+//   @IsInt()
+//   user_id:number;
+
 } 

@@ -7,9 +7,7 @@ import { Prisma } from '@prisma/client';
 export class ExamService {
     constructor(private prisma:PrismaService){}
     async findExams(){
-        const exams = await this.prisma.exam.findMany({
-
-        })
+        return await this.prisma.exam.findMany({})
     }
     async findExam(id:number){
         const exam = await this.prisma.exam.findUnique({
@@ -23,6 +21,12 @@ export class ExamService {
             }
         })
         return {exam,questions}
+    }
+    async updateExam(id: number, update_exam:Prisma.ExamUpdateInput){
+        const updatedOption = await this.prisma.exam.update({
+          where: { exam_id: +id},
+          data: update_exam, 
+        });
     }
     async createExam(dto:ExamDto){
         const exam= await this.prisma.exam.create({
@@ -40,15 +44,15 @@ export class ExamService {
     async deleteExam(id:number){
         const exam = await this.prisma.exam.delete({
             where:{
-                exam_id:3
+                exam_id:+id
             }
         })
-        return {msg:'exam deleted'}
+        return {msg:'exam numero : '+ id+' deleted'}
     }
     async exportExam(id:number){
         const exam = await this.prisma.exam.findUnique({
             where:{
-                exam_id:1
+                exam_id:+id
             }
         })
         return exam
