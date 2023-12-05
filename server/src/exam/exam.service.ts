@@ -109,28 +109,30 @@ export class ExamService {
       doc.text('Time: '+exam.exam_time+' hours', { align: 'center', fontSize: 12 });
       doc.text('Total Points: '+exam.total_point, { align: 'center', fontSize: 12 });
       for (const question of exam.questions) {
-        let optionIndex = 0;
+        //let optionIndex = 0;
         doc.text("Q"+question.questionOrder+" : "+question.content, {fontSize: 14 });
         const options  = await this.prisma.options.findMany({
             where:{  questionId:+question.question_id },});
- 
-        //console.log(options[0]);
-        while (optionIndex <= options.length) {
-            let option1 = options[optionIndex];
-            let option2 = null;
-
-            if (optionIndex + 1 < options.length) {
-                option2 = options[optionIndex + 1];
-                optionIndex++;
-            }
-
-            doc.text(` ${option1.option}`, { fontSize: 12 });
-            if (option2) {
-                doc.text(` ${option2.option}`, { fontSize: 12, align: 'right' });
-            }
-            
-            doc.moveDown();
+        for(const option of options){
+            doc.text(option.optionOrder+" - "+option.option, {fontSize: 14 });
         }
+        //console.log(options[0]);
+        // while (optionIndex <= options.length) {
+        //     let option1 = options[optionIndex];
+        //     let option2 = null;
+
+        //     if (optionIndex + 1 < options.length) {
+        //         option2 = options[optionIndex + 1];
+        //         optionIndex++;
+        //     }
+
+        //     doc.text(` ${option1.option}`, { fontSize: 12 });
+        //     if (option2) {
+        //         doc.text(` ${option2.option}`, { fontSize: 12, align: 'right' });
+        //     }
+            
+        //     doc.moveDown();
+        // }
       }
 
       doc.end();
