@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Res } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { ExamDto, UpdateExamDto } from './dto';
 import { Prisma } from '@prisma/client';
@@ -31,7 +31,13 @@ export class ExamController {
         return this.examService.deleteExam(id);
     }
     @Post(':id/export')
-    exportExam(@Param('id') id: number){
-        return this.examService.exportExam(id);
+    async exportExam(@Param('id') id: number,@Res() res):Promise<void>{
+        const pdfBuffer = await this.examService.exportExam(id);
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename=exam.pdf',
+            'Content-Length':pdfBuffer.length,
+        })
+        res.end(pdfBuffer);
     }
 }
