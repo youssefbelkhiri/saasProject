@@ -110,6 +110,7 @@ export class ExamService {
       doc.text('Total Points: '+exam.total_point, { align: 'center', fontSize: 12 });
       doc.moveDown();
       doc.moveDown();
+      doc.moveTo(50,130).lineTo(doc.page.width - 50, 130).stroke();
       for (const question of exam.questions) {
         doc.font('Helvetica-Bold');
         doc.text("Q"+question.questionOrder+" : "+question.content, {fontSize: 14 });
