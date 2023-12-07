@@ -7,9 +7,12 @@ import { ExamModule } from './exam/exam.module';
 import { GroupsModule } from './groups/groups.module';
 import { StudentsModule } from './students/students.module';
 import { EmailModule } from './email/email.module';
+import { PapersModule } from './papers/papers.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
-  imports: [AuthModule, UsersModule, PrismaModule, QuestionsModule, ExamModule, EmailModule, GroupsModule, StudentsModule],
+  imports: [AuthModule, UsersModule, PrismaModule, QuestionsModule, ExamModule, EmailModule, GroupsModule, StudentsModule, PapersModule, 
+            MulterModule.register({ dest: './uploads' })],
   controllers: [],
   providers: [],
 })

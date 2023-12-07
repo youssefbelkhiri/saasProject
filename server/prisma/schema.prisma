@@ -67,6 +67,7 @@ model Exam {
   user_id Int 
   questions Questions[]
   groups Groups[]
+  studentPapers Papers[]
 }
 
 model Questions {
@@ -104,4 +105,17 @@ model Students {
   last_name String
   student_number String
   groups  Groups[]
+  studentPapers Papers[]
+}
+
+
+model Papers {
+  paper_id Int @id @default(autoincrement()) @map("paper_id")
+  paper String
+  note Decimal
+  exam_id     Int      
+  student_id  Int      
+
+  exam        Exam     @relation(fields: [exam_id], references: [exam_id])
+  student     Students @relation(fields: [student_id], references: [student_id])
 }
