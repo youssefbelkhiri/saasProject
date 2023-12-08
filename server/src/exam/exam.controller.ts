@@ -40,4 +40,14 @@ export class ExamController {
         })
         res.end(pdfBuffer);
     }
+    @Post(':id/exportAnswerSheet/:groupid')
+    async exportAnswerSheet(@Param('id') id: number,@Param('groupid') groupeid: number,@Res() res):Promise<void>{
+        const pdfBuffer = await this.examService.exportAnswerSheet(id,groupeid);
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename=exam.pdf',
+            'Content-Length':pdfBuffer.length,
+        })
+        res.end(pdfBuffer);
+    }
 }

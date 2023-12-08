@@ -135,4 +135,52 @@ export class ExamService {
 
     return pdfBuffer;
     }
+
+    async exportAnswerSheet(examId:number,groupeid:number){
+        const group = await this.prisma.groups.findUnique({
+            where:{group_id:+groupeid},
+            include:{exam:true,students:true}
+        });
+        const exam  = await this.prisma.exam.findUnique({
+            where:{  exam_id:+examId },
+            include: {questions: true,groups:true},
+        });
+        const pdfBuffer: Buffer = await new Promise(async (resolve) => {
+      const doc = new PDFDocument({ size: 'LETTER', bufferPages: true });
+      for(const student of group.students){
+        
+        doc.text('Exam Title: '+exam.name, { align: 'center', fontSize: 20 });
+        doc.moveUp();
+        doc.text('First Name: '+student.first_name, { align: 'right', fontSize: 12 });
+        doc.text('Instructions: '+exam.description, { align: 'center', fontSize: 12 });
+        doc.moveUp();
+        doc.text('Last Name: '+student.last_name, { align: 'right', fontSize: 12 });
+        doc.text('Time: '+exam.exam_time+' min', { align: 'center', fontSize: 12 });
+        doc.moveUp();
+        doc.text('Student Id: '+student.student_number, { align: 'right', fontSize: 12 });
+        doc.text('Total Points: '+exam.total_point, { align: 'center', fontSize: 12 });
+        doc.moveDown();
+        doc.moveDown();
+        doc.moveTo(50,130).lineTo(doc.page.width - 50, 130).stroke();
+        
+        for (const question of exam.questions) {
+        doc.text("Answer of Question "+question.questionOrder+" is : ");
+        doc.moveDown();
+        }
+        doc.addPage();
+        doc.moveTo(0,0);
+      }
+      
+      doc.end();
+      const buffer = [];
+      doc.on('data', buffer.push.bind(buffer));
+      doc.on('end', () => {
+        const data = Buffer.concat(buffer);
+        resolve(data);
+      });
+    });
+
+    return pdfBuffer;
+    
+    }
 }
