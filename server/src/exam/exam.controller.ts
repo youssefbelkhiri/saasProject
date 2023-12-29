@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Request, Res, UseGuards } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { ExamDto, UpdateExamDto } from './dto';
-import { Prisma } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('exams')
 export class ExamController {
@@ -11,9 +11,21 @@ export class ExamController {
     findExams(){
         return this.examService.findExams();
     }
+
+    @UseGuards(JwtAuthGuard) 
     @Get(':id') 
-    findExam(@Param('id') id: number){
-        return this.examService.findExam(id);
+    async findExam(@Param('id') id: number , @Request() req){
+        const {user} = req;
+        console.log(user.id)
+        const userExam = await this.examService.findExam(id)
+        if(user.id === userExam.user_id){
+            return userExam;
+        }  
+        else{
+            return {
+                "message":"unauthorized"
+            }
+        }
     }
     @Post('new')
     createExam(@Body() dto:ExamDto){
@@ -30,7 +42,7 @@ export class ExamController {
     deleteExam(@Param('id') id: number){
         return this.examService.deleteExam(id);
     }
-    @Post(':id/export')
+    @Get(':id/export')
     async exportExam(@Param('id') id: number,@Res() res):Promise<void>{
         const pdfBuffer = await this.examService.exportExam(id);
         res.set({
@@ -40,7 +52,7 @@ export class ExamController {
         })
         res.end(pdfBuffer);
     }
-    @Post(':id/exportAnswerSheet/:groupid')
+    @Get(':id/exportAnswerSheet/:groupid')
     async exportAnswerSheet(@Param('id') id: number,@Param('groupid') groupeid: number,@Res() res):Promise<void>{
         const pdfBuffer = await this.examService.exportAnswerSheet(id,groupeid);
         res.set({

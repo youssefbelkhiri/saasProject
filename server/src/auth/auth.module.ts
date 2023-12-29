@@ -20,7 +20,7 @@ import { EmailConfirmationService } from './emailconfirmation.service';
     PrismaModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60s' },
+      signOptions: { expiresIn: '300000s' },
     }),
     ConfigModule.forRoot({
       validationSchema: Joi.object({

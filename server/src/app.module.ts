@@ -9,10 +9,11 @@ import { StudentsModule } from './students/students.module';
 import { EmailModule } from './email/email.module';
 import { PapersModule } from './papers/papers.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { GradingModule } from './grading/grading.module';
 
 @Module({
   imports: [AuthModule, UsersModule, PrismaModule, QuestionsModule, ExamModule, EmailModule, GroupsModule, StudentsModule, PapersModule, 
-            MulterModule.register({ dest: './uploads' })],
+            MulterModule.register({ dest: './uploads' }), GradingModule ],
   controllers: [],
   providers: [],
 })

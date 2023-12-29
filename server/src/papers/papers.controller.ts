@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UseInterceptors, UploadedFile, Body, BadRequestException, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseInterceptors, UploadedFile, Body, BadRequestException, Patch, Delete, UseGuards } from '@nestjs/common';
 import { PapersService } from './papers.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PaperDto } from './dto/paper.dto';
@@ -6,12 +6,12 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid'; 
 import { UpdatePapertDto } from './dto/update-paper.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 
 @Controller('papers')
 export class PapersController {
   constructor(private readonly papersService: PapersService) {}
-
 
   @Get()
   async findPapers(){
@@ -41,7 +41,8 @@ export class PapersController {
 
       if (allowedExtensions.includes(ext)) {
         callback(null, true);
-      } else {
+      } 
+      else {
         callback(new BadRequestException('Invalid file type. Only PNG, JPG, JPEG, and PDF are allowed.'), false);
       }
     },
