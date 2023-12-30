@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Options, Prisma, Questions  } from '@prisma/client';
 import {CreateQuestionDto} from './dto/create-question.dto'
@@ -10,25 +10,44 @@ import { PormptQuestion } from './dto/prompt-question.dto';
 export class QuestionsService {
   constructor(private readonly prisma: PrismaService, private readonly GenQuestionsService: GenQuestionsService) {}
 
-  async getAllQuestions(): Promise<Questions[]> {
-    return this.prisma.questions.findMany({ include: { options: true } });
+  async getAllQuestions(id: number): Promise<Questions[]> {
+    return this.prisma.questions.findMany({
+      where: {
+        examR: { user_id: +id, },
+      },
+      include: { options: true },
+    });
   }
 
-  async getQuestionById(id: number): Promise<Questions> {
+  async getQuestionById(id: number, user_id: number): Promise<Questions> {
     const question = await this.prisma.questions.findUnique({
       where: {question_id: +id},
-      include: {options: true},
+      include: {options: true, examR:true},
     });
   
     if (!question) {
       throw new NotFoundException(`Can't find this question : ${id}`)
     }
+
+    if (question.examR.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
+    }
   
     return question;
   }
 
-  async createQuestion(CreateQuestionDto:CreateQuestionDto) {
-    
+  async createQuestion(CreateQuestionDto:CreateQuestionDto, user_id: number) {
+    const exam = await this.prisma.exam.findFirst({
+      where: {
+        user_id: +user_id,
+        exam_id: CreateQuestionDto.exam_id,
+      },
+    });
+  
+    if (!exam) {
+      throw new HttpException('Unauthorized', 401);
+    }
+
     return await this.prisma.questions.create({
       data: {
         ...CreateQuestionDto,
@@ -43,28 +62,64 @@ export class QuestionsService {
   }
 
 
-  async genQuestion(question: PormptQuestion){
+  async genQuestion(question: PormptQuestion, user_id: number){
+    const exam = await this.prisma.exam.findFirst({
+      where: {
+        user_id: +user_id,
+        exam_id: question.exam_id,
+      },
+    });
+  
+    if (!exam) {
+      throw new HttpException('Unauthorized', 401);
+    }
+
     return this.GenQuestionsService.genQuestion(question)
   }
 
-  async updateOption(id: number, optionData: Prisma.OptionsUpdateInput): Promise<Options>{
+  async updateOption(id: number, optionData: Prisma.OptionsUpdateInput, user_id: number): Promise<Options>{
+    const option = await this.prisma.options.findUnique({
+      where: {
+        option_id: +id,
+      },
+      include: {
+        question: {
+          select: {
+            examR: true,
+          },
+        },
+      },
+    });
+
+    if (!option) {
+      throw new NotFoundException(`Can't find this option id :  ${id}`);
+    }
+
+    if (option.question.examR.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
+    }
+
     const updatedOption = await this.prisma.options.update({
       where: { option_id: +id},
       data: optionData, 
     });
 
-    if (!updatedOption) {
-      throw new NotFoundException(`Can't find this option id : ${id} `)
-    }
-
     return updatedOption;
   }
 
 
-  async updateQuestion(id: number, questionData: UpdateQuestionDto): Promise<Questions> {
-    const question = await this.prisma.questions.findUnique({where: { question_id: +id }});
+  async updateQuestion(id: number, questionData: UpdateQuestionDto, user_id: number): Promise<Questions> {
+    const question = await this.prisma.questions.findUnique({
+      where: { question_id: +id },
+      include: { examR: true },
+    });
+  
     if (!question) {
       throw new NotFoundException(`Can't find this question id : ${id}`);
+    }
+
+    if (question.examR.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
     }
 
     const updatedQuestion = await this.prisma.questions.update({
@@ -85,7 +140,7 @@ export class QuestionsService {
           optionOrder: optionData.optionOrder,
           option: optionData.option,
           correct: optionData.correct,
-        });
+        },user_id);
       });
       await Promise.all(updateOptionPromises);
     }
@@ -94,15 +149,26 @@ export class QuestionsService {
   }
   
   
-  async deleteOption(id: number): Promise<Options> {
+  async deleteOption(id: number, user_id: number): Promise<Options> {
     const option = await this.prisma.options.findUnique({
       where: {
         option_id: +id,
       },
+      include: {
+        question: {
+          select: {
+            examR: true,
+          },
+        },
+      },
     });
 
     if (!option) {
-      throw new NotFoundException(`Can't find this question id :  ${id}`);
+      throw new NotFoundException(`Can't find this option id :  ${id}`);
+    }
+
+    if (option.question.examR.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
     }
 
     await this.prisma.options.delete({
@@ -115,7 +181,20 @@ export class QuestionsService {
   }
 
 
-  async deleteQuestion(id: number): Promise<void> {
+  async deleteQuestion(id: number, user_id: number): Promise<void> {
+    const question = await this.prisma.questions.findUnique({
+      where: { question_id: +id },
+      include: { examR: true },
+    });
+  
+    if (!question) {
+      throw new NotFoundException(`Question with id ${id} not found`);
+    }
+  
+    if (question.examR.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
+    }
+  
     await this.prisma.options.deleteMany({
       where: {
         questionId: +id,

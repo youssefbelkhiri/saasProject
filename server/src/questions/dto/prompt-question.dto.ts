@@ -4,4 +4,5 @@ export class PormptQuestion{
 	difficulty: string;
 	language: string;
 	points: number;	 
+	exam_id: number;
 }
