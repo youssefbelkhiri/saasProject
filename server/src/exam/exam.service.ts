@@ -7,9 +7,13 @@ import * as PDFDocument from 'pdfkit';
 @Injectable()
 export class ExamService {
     constructor(private prisma:PrismaService){}
-    async findExams(){
-        return await this.prisma.exam.findMany({})
+
+    async findExams(id: number){
+        return await this.prisma.exam.findMany({
+            where: { user_id: +id }, 
+        });
     }
+
     async findExam(id:number){
         return await this.prisma.exam.findUnique({
             where:{  exam_id:+id },
@@ -66,6 +70,7 @@ export class ExamService {
         })
         return {msg:'exam numero : '+ id+' deleted'}
     }
+    
     async exportExam(id:number): Promise<Buffer>{
 
         const exam  = await this.prisma.exam.findUnique({

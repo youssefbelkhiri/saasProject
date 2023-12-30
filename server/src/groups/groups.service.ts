@@ -8,8 +8,10 @@ import { UpdateGroupDto } from './dto/update-groupe.dto';
 export class GroupsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getGroups(){
-    return await this.prisma.groups.findMany({})
+  async getGroups(id: number){
+    return await this.prisma.groups.findMany({
+      where: { user_id: +id }, 
+    })
   }
 
   async getGroup(id: number){

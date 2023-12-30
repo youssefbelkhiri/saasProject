@@ -1,47 +1,68 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Request, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, Param, Patch, Post, Request, Res, UseGuards } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { ExamDto, UpdateExamDto } from './dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard) 
 @Controller('exams')
 export class ExamController {
     constructor(private examService:ExamService){}
+
     
     @Get('/')
-    findExams(){
-        return this.examService.findExams();
+    findExams(@Request() req){
+        return this.examService.findExams(req.user.id);
     }
 
-    @UseGuards(JwtAuthGuard) 
     @Get(':id') 
     async findExam(@Param('id') id: number , @Request() req){
         const {user} = req;
-        console.log(user.id)
         const userExam = await this.examService.findExam(id)
-        if(user.id === userExam.user_id){
-            return userExam;
-        }  
-        else{
-            return {
-                "message":"unauthorized"
+        try{
+            if(user.id === userExam.user_id){
+                return userExam;
+            }  
+            else{
+                throw new HttpException('Unauthorized', 401);
             }
         }
+        catch{
+            return "Can't find exam"
+        }
     }
+
     @Post('new')
-    createExam(@Body() dto:ExamDto){
-        console.log({
-            dto,  
-        })
-        return this.examService.createExam(dto);
+    createExam(@Body() dto:ExamDto, @Request() req){
+        if (req.user.id === dto.user_id) {
+            return this.examService.createExam(dto);
+        } 
+        else {
+            throw new HttpException('Unauthorized', 401);
+        }
     }
+
     @Patch(':id')
-    updateExam(@Param('id') id: number,@Body() examDto: UpdateExamDto){
-        return this.examService.updateExam(id,examDto);
+    async updateExam(@Param('id') id: number, @Body() examDto: UpdateExamDto, @Request() req) {
+        const userExam = await this.examService.findExam(id); 
+
+        if (req.user.id !== userExam.user_id) {
+            throw new HttpException('Unauthorized', 401);
+        }
+
+        return this.examService.updateExam(id, examDto);
     }
+
     @Delete(':id')
-    deleteExam(@Param('id') id: number){
+    async deleteExam(@Param('id') id: number, @Request() req){
+        const userExam = await this.examService.findExam(id); 
+
+        if (req.user.id !== userExam.user_id) {
+            throw new HttpException('Unauthorized', 401);
+        }
+        
         return this.examService.deleteExam(id);
     }
+
     @Get(':id/export')
     async exportExam(@Param('id') id: number,@Res() res):Promise<void>{
         const pdfBuffer = await this.examService.exportExam(id);
@@ -52,6 +73,7 @@ export class ExamController {
         })
         res.end(pdfBuffer);
     }
+
     @Get(':id/exportAnswerSheet/:groupid')
     async exportAnswerSheet(@Param('id') id: number,@Param('groupid') groupeid: number,@Res() res):Promise<void>{
         const pdfBuffer = await this.examService.exportAnswerSheet(id,groupeid);
