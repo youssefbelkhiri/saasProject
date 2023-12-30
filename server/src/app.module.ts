@@ -26,6 +26,7 @@ import { GradingModule } from './grading/grading.module';
     PapersModule,
     MulterModule.register({ dest: './uploads' }),
     ReportsModule,
+    GradingModule
   ],
   controllers: [],
   providers: [],
