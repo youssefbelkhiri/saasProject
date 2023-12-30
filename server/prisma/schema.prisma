@@ -119,3 +119,8 @@ model Papers {
   exam        Exam     @relation(fields: [exam_id], references: [exam_id])
   student     Students @relation(fields: [student_id], references: [student_id])
 }
+model student_group {
+  id Int @id @default(autoincrement()) @map("student_group_id")
+  group_id Int 
+  student_id Int
+}

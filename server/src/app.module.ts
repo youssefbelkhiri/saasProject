@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -9,11 +10,23 @@ import { StudentsModule } from './students/students.module';
 import { EmailModule } from './email/email.module';
 import { PapersModule } from './papers/papers.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { ReportsModule } from './reports/reports.module';
 import { GradingModule } from './grading/grading.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, PrismaModule, QuestionsModule, ExamModule, EmailModule, GroupsModule, StudentsModule, PapersModule, 
-            MulterModule.register({ dest: './uploads' }), GradingModule ],
+  imports: [
+    AuthModule,
+    UsersModule,
+    PrismaModule,
+    QuestionsModule,
+    ExamModule,
+    EmailModule,
+    GroupsModule,
+    StudentsModule,
+    PapersModule,
+    MulterModule.register({ dest: './uploads' }),
+    ReportsModule,
+  ],
   controllers: [],
   providers: [],
 })
