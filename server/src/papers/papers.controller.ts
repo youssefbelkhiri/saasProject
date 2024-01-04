@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UseInterceptors, UploadedFile, Body, BadRequestException, Patch, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseInterceptors, UploadedFile, Body, BadRequestException, Patch, Delete, UseGuards, Request } from '@nestjs/common';
 import { PapersService } from './papers.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PaperDto } from './dto/paper.dto';
@@ -8,19 +8,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { UpdatePapertDto } from './dto/update-paper.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-
+@UseGuards(JwtAuthGuard)
 @Controller('papers')
 export class PapersController {
   constructor(private readonly papersService: PapersService) {}
 
   @Get()
-  async findPapers(){
-    return await this.papersService.findPapers()
+  async findPapers(@Request() req){
+    return await this.papersService.findPapers(req.user.id)
   }
 
   @Get(":id")
-  async findPaper(@Param("id") id: number){
-    return await this.papersService.findPaper(id);
+  async findPaper(@Param("id") id: number, @Request() req){
+    return await this.papersService.findPaper(id, req.user.id);
   }
 
   @Post("upload")
@@ -47,18 +47,18 @@ export class PapersController {
       }
     },
   }))
-  async importPaper(@UploadedFile() file: Express.Multer.File, @Body() PaperDto: PaperDto){
-    return await this.papersService.importPaper(file.filename, PaperDto)
+  async importPaper(@UploadedFile() file: Express.Multer.File, @Body() PaperDto: PaperDto, @Request() req){
+    return await this.papersService.importPaper(file.filename, PaperDto, req.user.id)
   }
 
   @Patch(":id")
-  async updatePaper(@Param("id") id:number, @Body() paperDto: UpdatePapertDto){
-    return await this.papersService.updatePaper(id, paperDto);
+  async updatePaper(@Param("id") id:number, @Body() paperDto: UpdatePapertDto, @Request() req){
+    return await this.papersService.updatePaper(id, paperDto, req.user.id);
   }
 
   @Delete(":id")
-  async deletePaper(@Param("id") id:number){
-    return await this.papersService.deletePaper(id);
+  async deletePaper(@Param("id") id:number, @Request() req){
+    return await this.papersService.deletePaper(id, req.user.id);
   }
 
 }

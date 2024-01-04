@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaperDto } from './dto/paper.dto';
 import { UpdatePapertDto } from './dto/update-paper.dto';
@@ -9,26 +9,66 @@ import * as path from 'path';
 export class PapersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findPapers(){
-    return await this.prisma.papers.findMany({})
+  async findPapers(user_id: number){
+    return await this.prisma.papers.findMany({
+      where: {
+        exam: {
+          user_id: +user_id,
+        },
+      },
+    })
   }
 
-  async findPaper(id: number){
-    const paper = await this.prisma.papers.findUnique({where: {paper_id: +id}})
+  async findPaper(id: number, user_id: number){
+    const paper = await this.prisma.papers.findUnique({
+      where: { paper_id: +id },
+      include: {
+        exam: {
+          select: {
+            user_id: true,
+          },
+        },
+      },
+    });
+  
     if (!paper) {
-      throw new NotFoundException(`Can't find this paper : ${id}`)
+      throw new NotFoundException(`Can't find this paper: ${id}`);
     }
+  
+    if (paper.exam.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
+    }
+  
     return paper;
   }
 
-  async importPaper(filename: string, paperDto: PaperDto) {
+  async importPaper(filename: string, paperDto: PaperDto, user_id: number) {
     const { exam_id, student_id } = paperDto;
 
-    const exam = await this.prisma.exam.findUnique({ where: { exam_id: +exam_id } });
-    const student = await this.prisma.students.findUnique({ where: { student_id: +student_id } });
+    const exam = await this.prisma.exam.findUnique({
+      where: { exam_id: +exam_id },
+      select: {
+        user_id: true,
+      },
+    });
+
+    const student = await this.prisma.students.findUnique({
+      where: { student_id: +student_id },
+      select: {
+        groups: {
+          select: {
+            user_id: true,
+          },
+        },
+      },
+    });
 
     if (!exam || !student) {
       throw new NotFoundException("Can't fin associated exam or student");
+    }
+
+    if (!student.groups.some((group) => group.user_id === user_id)) {
+      throw new HttpException('Unauthorized', 401);
     }
 
     return await this.prisma.papers.create({
@@ -41,11 +81,24 @@ export class PapersService {
     });
   }
   
-  async updatePaper(id: number, paperDto: UpdatePapertDto){
-    const paper = await this.prisma.papers.findUnique({ where: { paper_id: +id } });
-
+  async updatePaper(id: number, paperDto: UpdatePapertDto, user_id: number){
+    const paper = await this.prisma.papers.findUnique({
+      where: { paper_id: +id },
+      include: {
+        exam: {
+          select: {
+            user_id: true,
+          },
+        },
+      },
+    });
+  
     if (!paper) {
       throw new NotFoundException(`Can't find paper with id: ${id}`);
+    }
+  
+    if (paper.exam.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
     }
 
     return await this.prisma.papers.update({
@@ -56,11 +109,24 @@ export class PapersService {
     });
   }
 
-  async deletePaper(id: number){
-    const paper = await this.prisma.papers.findUnique({ where: { paper_id: +id } });
+  async deletePaper(id: number, user_id: number){
+    const paper = await this.prisma.papers.findUnique({
+      where: { paper_id: +id },
+      include: {
+        exam: {
+          select: {
+            user_id: true,
+          },
+        },
+      },
+    });
 
     if (!paper) {
       throw new NotFoundException(`Can't find paper with id: ${id}`);
+    }
+
+    if (paper.exam.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
     }
 
     const filePath = path.join(process.cwd(), 'uploads', paper.paper);
