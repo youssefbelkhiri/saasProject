@@ -1,12 +1,38 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ReportsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getNotesStatistics(exam_id: number, groupe_id: number) {
+  async getNotesStatistics(exam_id: number, groupe_id: number, user_id: number) {
+    const group = await this.prismaService.groups.findUnique({
+      where: {
+        group_id: +groupe_id,
+      },
+      select: {
+        user_id: true,
+      },
+    });
+
+    const exam = await this.prismaService.exam.findUnique({
+      where: {
+        exam_id: +exam_id,
+      },
+      select: {
+        user_id: true,
+      },
+    });
+
+    if (!group || !exam) {
+      throw new NotFoundException(`Can't find exam or group`);
+    }
+  
+    if (exam.user_id !== user_id || group.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
+    }
+
     const studentsInGroup = await this.prismaService.student_group.findMany({
       where: {
         group_id: groupe_id,

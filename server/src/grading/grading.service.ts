@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, HttpException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { gradingDto } from './dto/grading.dto';
 import * as path from 'path';
@@ -56,6 +56,8 @@ export class GradingService {
   // convert text to json
   async convertTxtToJson(text: string) {
     try {
+      
+      
       const matches = text.match(/Answer of Question (\d+) is:? (\d+)/g);
   
       if (!matches) {
@@ -70,6 +72,10 @@ export class GradingService {
       }, {});
   
       const json_data = JSON.stringify(answers, null, 4);
+
+      console.log(text)
+      console.log(json_data)
+      
       return json_data;
     } 
     catch (error) {
@@ -155,7 +161,35 @@ export class GradingService {
   }
 
   // grading paper
-  async gradPaper(gradingDto: gradingDto){
+  async gradPaper(gradingDto: gradingDto, user_id: number){
+    const paper = await this.prisma.papers.findUnique({
+      where: { paper_id: +gradingDto.paper_id },
+      include: {
+        exam: {
+          select: {
+            user_id: true,
+          },
+        },
+      },
+    });
+
+    const exam = await this.prisma.exam.findUnique({
+      where: {
+        exam_id: +gradingDto.exam_id,
+      },
+      select: {
+        user_id: true,
+      },
+    });
+  
+    if (!paper || !exam) {
+      throw new NotFoundException(`Can't find exam paper with id: ${gradingDto.paper_id}`);
+    }
+  
+    if (paper.exam.user_id !== user_id || exam.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
+    }
+    
     const language = await this.findExam(gradingDto);
     const paper_path = await this.findPaper(gradingDto); 
 
@@ -197,7 +231,7 @@ export class GradingService {
   }
 
   // grading group of student
-  async gradGroup(gradingGroupDto: gradingGroupDto) {
+  async gradGroup(gradingGroupDto: gradingGroupDto, user_id: number) {
     const students = await this.prisma.students.findMany({
       where: {
         groups: {
@@ -221,8 +255,8 @@ export class GradingService {
       if (paper) {
         await this.gradPaper({
           paper_id: paper.paper_id,
-          exam_id: +gradingGroupDto.exam_id,
-        });
+          exam_id: +gradingGroupDto.exam_id
+        }, user_id);
       }
     }
   }
