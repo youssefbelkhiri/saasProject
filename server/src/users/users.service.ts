@@ -60,58 +60,63 @@ export class UsersService {
       throw new Error(`User with id ${id} not found.`);
     }
   
-    for (const exam of user.exams || []) {
-      for (const question of exam.questions || []) {
-        await this.prisma.options.deleteMany({
+
+    if(user.exams){
+      for (const exam of user.exams || []) {
+        for (const question of exam.questions || []) {
+          await this.prisma.options.deleteMany({
+            where: {
+              questionId: question.question_id,
+            },
+          });
+    
+          await this.prisma.questions.delete({
+            where: {
+              question_id: question.question_id,
+            },
+          });
+        }
+    
+        await this.prisma.papers.deleteMany({
           where: {
-            questionId: question.question_id,
+            exam_id: exam.exam_id,
           },
         });
-  
-        await this.prisma.questions.delete({
-          where: {
-            question_id: question.question_id,
-          },
-        });
-      }
-  
-      await this.prisma.papers.deleteMany({
-        where: {
-          exam_id: exam.exam_id,
-        },
-      });
-  
-      await this.prisma.exam.delete({
-        where: {
-          exam_id: exam.exam_id,
-        },
-      });
-    }
-  
-    for (const group of user.groups || []) {
-      for (const student of group.students || []) {
-        await this.prisma.student_group.deleteMany({
-          where: {
-            student_id: student.student_id,
-          },
-        });
-      }
-  
-      for (const exam of group.exam || []) {
+    
         await this.prisma.exam.delete({
           where: {
             exam_id: exam.exam_id,
           },
         });
       }
-  
-      await this.prisma.groups.delete({
-        where: {
-          group_id: group.group_id,
-        },
-      });
     }
-  
+    
+    if(user.groups){
+      for (const group of user.groups || []) {
+        for (const student of group.students || []) {
+          await this.prisma.student_group.deleteMany({
+            where: {
+              student_id: student.student_id,
+            },
+          });
+        }
+    
+        for (const exam of group.exam || []) {
+          await this.prisma.exam.delete({
+            where: {
+              exam_id: exam.exam_id,
+            },
+          });
+        }
+    
+        await this.prisma.groups.delete({
+          where: {
+            group_id: group.group_id,
+          },
+        });
+      }  
+    }
+    
     await this.prisma.user.delete({
       where: {
         id: +id,

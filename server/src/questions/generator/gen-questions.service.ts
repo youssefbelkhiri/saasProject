@@ -16,7 +16,7 @@ export class GenQuestionsService {
       authClient: new GoogleAuth().fromAPIKey(API_KEY),
     });
 
-    const promptQuestion = `Generate 10 questions with the following criteria:
+    const promptQuestion = `Generate 7 questions (2400 maximum charcteres and dont use double quotes just single quote) with the following criteria:
                         Content: ${question.content} ,
                         Difficulty: ${question.difficulty},
                         Number of options for each question: ${question.nbrOptions},

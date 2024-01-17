@@ -52,12 +52,26 @@ export class StudentsService {
     if (groups && Array.isArray(groups)) {
       const group_ids = groups.map(group_id => ({ group_id: group_id }));
   
-      return await this.prisma.students.create({
+      const studentGroup =  await this.prisma.students.create({
         data: {
           ...restDto,
           groups: { connect: group_ids },
         },
       });
+
+      await Promise.all(
+        group_ids.map(async (id) => {
+          await this.prisma.student_group.create({
+            data: {
+              group_id: +id.group_id, 
+              student_id: +studentGroup.student_id,
+            },
+          });
+        })
+      );
+      return studentGroup;
+
+
     } 
     else {
       return await this.prisma.students.create({ data: { ...restDto } }); 

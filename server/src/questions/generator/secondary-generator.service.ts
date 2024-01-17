@@ -7,6 +7,7 @@ export class SecondaryGeneratorService {
   async secondaryGenQuestion(question: PormptQuestion){
     const { BardAPI } = require('bard-api-node');
     const assistant = new BardAPI();
+    console.log(process.env.BARD_API_KEY)
     await assistant.setSession('__Secure-1PSID', process.env.BARD_API_KEY);
 
     const promptQuestion = `Generate 10 questions with the following criteria:

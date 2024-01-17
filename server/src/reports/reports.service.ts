@@ -33,16 +33,22 @@ export class ReportsService {
       throw new HttpException('Unauthorized', 401);
     }
 
+    
+
     const studentsInGroup = await this.prismaService.student_group.findMany({
       where: {
-        group_id: groupe_id,
+        group_id: +groupe_id,
       },
       select: {
         student_id: true,
       },
     });
 
+
+    console.log(studentsInGroup)
+
     const studentIds = studentsInGroup.map((student) => student.student_id);
+    console.log(studentIds)
 
     const results = await this.prismaService.papers.groupBy({
       by: ['exam_id'],
@@ -90,13 +96,13 @@ export class ReportsService {
       const { note } = not;
       if (+note < 10) {
         gradeCounts['Non validé'] += 1;
-      } else if (+note < 14) {
+      } else if (+note < 12) {
         gradeCounts['Passable'] += 1;
-      } else if (+note < 16) {
+      } else if (+note < 14) {
         gradeCounts['Assez bien'] += 1;
-      } else if (+note < 18) {
+      } else if (+note < 16) {
         gradeCounts['Bien'] += 1;
-      } else if (+note < 20) {
+      } else if (+note < 18) {
         gradeCounts['Très bien'] += 1;
       } else {
         gradeCounts['Excellent'] += 1;

@@ -51,6 +51,12 @@ export class PapersController {
     return await this.papersService.importPaper(file.filename, PaperDto, req.user.id)
   }
 
+  // @Post('test')
+  // @UseInterceptors(FileInterceptor('file'))
+  // uploadFile(@UploadedFile() file: Express.Multer.File) {
+  //   console.log(file);
+  // }
+
   @Patch(":id")
   async updatePaper(@Param("id") id:number, @Body() paperDto: UpdatePapertDto, @Request() req){
     return await this.papersService.updatePaper(id, paperDto, req.user.id);

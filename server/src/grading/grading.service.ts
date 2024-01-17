@@ -39,6 +39,8 @@ export class GradingService {
 
       const ret = await worker.recognize(imagePath);
 
+      console.log("student_answers :", ret.data.text)
+
       return ret.data.text;
     } 
     finally {
@@ -56,34 +58,34 @@ export class GradingService {
   // convert text to json
   async convertTxtToJson(text: string) {
     try {
+      // const matches = text.match(/Answer of Question (\d+) is\s*:\s*(\d+)/g);
+      const matches = text.match(/Answer of Question (\d+)\s*is\s*:\s*(\d+)/g);
+
       
-      
-      const matches = text.match(/Answer of Question (\d+) is:? (\d+)/g);
   
       if (!matches) {
-        // throw new Error('No answers found in the text');
         return
+        // throw new Error('No answers found in the text');
       }
   
       const answers = matches.reduce((acc, match) => {
-        const [_, question, answer] = match.match(/Answer of Question (\d+) is:? (\d+)/);
+        const [_, question, answer] = match.match(/Answer of Question (\d+)\s*is\s*:\s*(\d+)/);
         acc[parseInt(question)] = parseInt(answer);
         return acc;
       }, {});
   
       const json_data = JSON.stringify(answers, null, 4);
-
-      console.log(text)
-      console.log(json_data)
+  
+      console.log(text);
+      console.log(json_data);
       
       return json_data;
-    } 
-    catch (error) {
+    } catch (error) {
       console.error(error.message);
-      return 'Error processing papers';
+      throw new Error('Error processing papers');
     }
   }
-
+  
   // find exam answers 
   async findExamAnswers(exam_id: number) {
     const exam = await this.prisma.exam.findUnique({
@@ -210,21 +212,36 @@ export class GradingService {
     let note;
     
     const student_answers = await this.convertTxtToJson(result);
-    if(student_answers){
+    console.log("student_answers :", student_answers)
+    
+    if (student_answers) {
       const student_answers_json = JSON.parse(student_answers);    
       const exam_answers = await this.findExamAnswers(gradingDto.exam_id)
-  
+    
       const listQuestionsAnswers = await this.correctAnswers(student_answers_json, exam_answers)
       const note = await this.calcNote(listQuestionsAnswers, gradingDto.exam_id)
       await this.updateNote(gradingDto.paper_id, note)
-
-      console.log("student_answers :", student_answers_json)
-      console.log("exam_answers :", exam_answers)
-      console.log("listQuestionsAnswers :", listQuestionsAnswers)
-      console.log("note :", note)
-    }
-    else{
-      await this.updateNote(gradingDto.paper_id, 0)
+    
+      console.log("Student Answers :", student_answers_json)
+      console.log("Exam Correct Answers :", exam_answers)
+      console.log("List Correct Questions Answers :", listQuestionsAnswers)
+      console.log("Final Note :", note)
+    
+      return {
+        student_answers: student_answers_json,
+        exam_answers: exam_answers,
+        listQuestionsAnswers: listQuestionsAnswers,
+        note: note,
+      };
+    } 
+    else {
+      await this.updateNote(gradingDto.paper_id, 0);
+      return {
+        student_answers: null,
+        exam_answers: null,
+        listQuestionsAnswers: null,
+        note: 0,
+      };
     }
     
     return note;
@@ -251,13 +268,15 @@ export class GradingService {
 
     for (const student of students) {
       const paper = student.studentPapers[0];
+      console.log(paper)
 
-      if (paper) {
+      if(paper) {
         await this.gradPaper({
           paper_id: paper.paper_id,
           exam_id: +gradingGroupDto.exam_id
         }, user_id);
       }
+      
     }
   }
 
