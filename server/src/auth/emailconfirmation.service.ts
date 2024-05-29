@@ -37,24 +37,35 @@ export class EmailConfirmationService {
       throw new BadRequestException('Bad confirmation token');
     }
   }
-  public sendVerificationLink(emailver: string) {
-    const payload = { emailver };
-    const token = this.jwtService.sign(payload, {
+  
+  async sendVerificationLink(email: string) {
+    const token = await this.generateVerificationToken(email);
+    const confirmationLink = `${this.configService.get(
+      'EMAIL_CONFIRMATION_URL',
+    )}?token=${token}`;
+    
+    const htmlContent = `
+      <p>To confirm your email, click the button below:</p>
+      <a href="${confirmationLink}" style="display:inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Confirm Email</a>
+    `;
+
+    await this.emailService.sendMail({
+      to: email,
+      subject: 'Email Confirmation',
+      html: htmlContent,
+    });
+  }
+
+  async generateVerificationToken(email: string) {
+    const payload = { emailver: email };
+    return this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_VERIFICATION_TOKEN_SECRET'),
       expiresIn: `${this.configService.get(
         'JWT_VERIFICATION_TOKEN_EXPIRATION_TIME',
       )}s`,
     });
-    const url = `${this.configService.get(
-      'EMAIL_CONFIRMATION_URL',
-    )}?token=${token}`;
-    const text = `to confirm your email click here:<a href=${url}/>`;
-    return this.emailService.sendMail({
-      to: emailver,
-      subject: 'email confirmation',
-      text,
-    });
   }
+
   async isEmailConfirmed(email: string) {
     const user = await this.usersAuthService.findOne(email);
     if (user.isEmailConfirmed) {

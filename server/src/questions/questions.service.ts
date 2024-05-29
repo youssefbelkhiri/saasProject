@@ -70,9 +70,9 @@ export class QuestionsService {
       },
     });
   
-    if (!exam) {
-      throw new HttpException('Unauthorized', 401);
-    }
+    // if (!exam) {
+    //   throw new HttpException('Unauthorized', 401);
+    // }
 
     return this.GenQuestionsService.genQuestion(question)
   }
