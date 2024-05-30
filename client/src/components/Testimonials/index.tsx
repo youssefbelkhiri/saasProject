@@ -6,29 +6,29 @@ const testimonialData: Testimonial[] = [
   {
     id: 1,
     name: "Musharof Chy",
-    designation: "Founder @TailGrids",
+    designation: "Professor @Oxford ",
     content:
-      "Our members are so impressed. It's intuitive. It's clean. It's distraction free. If you're building a community.",
+      "I thoroughly enjoy using the exam generator! It simplifies the process of creating and grading exams, making my teaching experience much more efficient.",
     image: "/images/testimonials/auth-01.png",
     star: 5,
   },
   {
     id: 2,
     name: "Devid Weilium",
-    designation: "Founder @UIdeck",
+    designation: "Professor @Stanford ",
     content:
-      "Our members are so impressed. It's intuitive. It's clean. It's distraction free. If you're building a community.",
+      "The exam generator has been a game-changer for me. It has helped me create high-quality exams that are tailored to my curriculum needs. I highly recommend it to all educators!",
     image: "/images/testimonials/auth-02.png",
     star: 5,
   },
   {
     id: 3,
     name: "Lethium Frenci",
-    designation: "Founder @Lineicons",
+    designation: "User",
     content:
-      "Our members are so impressed. It's intuitive. It's clean. It's distraction free. If you're building a community.",
+      "I have been using the exam generator for a while now, and I must say that it has exceeded my expectations. It is user-friendly, efficient, and has made exam creation a breeze!",
     image: "/images/testimonials/auth-03.png",
-    star: 5,
+    star: 4,
   },
 ];
 
@@ -38,7 +38,7 @@ const Testimonials = () => {
       <div className="container">
         <SectionTitle
           title="What Our Users Says"
-          paragraph="There are many variations of passages of Lorem Ipsum available but the majority have suffered alteration in some form."
+          paragraph="Our users have shared their experiences with our platform. Read on to discover how our exam generator has benefited educators like you."
           center
         />
 

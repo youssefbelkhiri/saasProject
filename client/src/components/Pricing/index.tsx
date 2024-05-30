@@ -12,7 +12,7 @@ const Pricing = () => {
       <div className="container">
         <SectionTitle
           title="Simple and Affordable Pricing"
-          paragraph="There are many variations of passages of Lorem Ipsum available but the majority have suffered alteration in some form."
+          paragraph="Choose a plan that suits your needs. Start with a free trial, and upgrade as you grow."
           center
           width="665px"
         />
@@ -59,43 +59,43 @@ const Pricing = () => {
 
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
           <PricingBox
-            packageName="Lite"
-            price={isMonthly ? "40" : "120"}
+            packageName="Free"
+            price={isMonthly ? "0" : "0"}
             duration={isMonthly ? "mo" : "yr"}
-            subtitle="Lorem ipsum dolor sit amet adiscing elit Mauris egestas enim."
+            subtitle="Start creating exams today with our free plan. No hidden fees, just powerful features to help you get started."
           >
-            <OfferList text="All UI Components" status="active" />
-            <OfferList text="Use with Unlimited Projects" status="active" />
-            <OfferList text="Commercial Use" status="active" />
-            <OfferList text="Email Support" status="active" />
-            <OfferList text="Lifetime Access" status="inactive" />
-            <OfferList text="Free Lifetime Updates" status="inactive" />
+            <OfferList text="2 Initial Generation" status="active" />
+            <OfferList text="10 Questions per Exam" status="active" />
+            <OfferList text="10 Scanned Papers" status="active" />
+            <OfferList text="Export exam PDF" status="active" />
+            <OfferList text="Export Exam" status="inactive" />
+            <OfferList text="Contact Support" status="active" />
           </PricingBox>
           <PricingBox
-            packageName="Basic"
-            price={isMonthly ? "399" : "789"}
+            packageName="Standard"
+            price={isMonthly ? "5" : "49"}
             duration={isMonthly ? "mo" : "yr"}
-            subtitle="Lorem ipsum dolor sit amet adiscing elit Mauris egestas enim."
+            subtitle="Unlock additional features and resources with our Standard plan, perfect for educators looking to expand their exam capabilities."
           >
-            <OfferList text="All UI Components" status="active" />
-            <OfferList text="Use with Unlimited Projects" status="active" />
-            <OfferList text="Commercial Use" status="active" />
-            <OfferList text="Email Support" status="active" />
-            <OfferList text="Lifetime Access" status="active" />
-            <OfferList text="Free Lifetime Updates" status="inactive" />
+            <OfferList text="20 Initial Generation" status="active" />
+            <OfferList text="50 Questions per Exam" status="active" />
+            <OfferList text="100 Scanned Papers" status="active" />
+            <OfferList text="Reports & Analytics" status="active" />
+            <OfferList text="Export Exam PDF" status="active" />
+            <OfferList text="Contact Support" status="active" />
           </PricingBox>
           <PricingBox
-            packageName="Plus"
-            price={isMonthly ? "589" : "999"}
+            packageName="Premium"
+            price={isMonthly ? "30" : "299"}
             duration={isMonthly ? "mo" : "yr"}
-            subtitle="Lorem ipsum dolor sit amet adiscing elit Mauris egestas enim."
+            subtitle="Maximize your exam generation potential with our Platinum plan. Enjoy premium features and priority support for an unparalleled experience."
           >
-            <OfferList text="All UI Components" status="active" />
-            <OfferList text="Use with Unlimited Projects" status="active" />
-            <OfferList text="Commercial Use" status="active" />
-            <OfferList text="Email Support" status="active" />
-            <OfferList text="Lifetime Access" status="active" />
-            <OfferList text="Free Lifetime Updates" status="active" />
+            <OfferList text="Unlimited Generations" status="active" />
+            <OfferList text="Unlimited Questions" status="active" />
+            <OfferList text="300 Scanned Papers" status="active" />
+            <OfferList text="Reports & Analytics" status="active" />
+            <OfferList text="Export Exam PDF/WORD/EXCEL" status="active" />
+            <OfferList text="Contact Support" status="active" />
           </PricingBox>
         </div>
       </div>
