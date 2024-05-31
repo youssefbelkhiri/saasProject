@@ -72,6 +72,18 @@ const menuData: Menu[] = [
         path: "/error",
         newTab: false,
       },
+      {
+        id: 48,
+        title: "Profile Page",
+        path: "/profile",
+        newTab: false,
+      },
+      {
+        id: 48,
+        title: "Exams Page",
+        path: "/exams",
+        newTab: false,
+      },
     ],
   },
 ];
