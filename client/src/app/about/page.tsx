@@ -15,7 +15,7 @@ const AboutPage = () => {
     <>
       <Breadcrumb
         pageName="About Page"
-        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. In varius eros eget sapien consectetur ultrices. Ut quis dapibus libero."
+        description="Discover Exam Generator: Your go-to platform for effortless exam creation and grading. Join us in revolutionizing education with intuitive tools tailored for educators."
       />
       <AboutSectionOne />
       <AboutSectionTwo />
