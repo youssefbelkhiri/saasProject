@@ -43,26 +43,26 @@ const ExamsPage = () => {
         <>
         <section className="relative z-10 overflow-hidden pb-16 pt-36 md:pb-20 lg:pb-28 lg:pt-[180px]">
             <div className="container">
-            <div className="flex items-center mb-8 justify-between">
-                <input
-                    type="text"
-                    placeholder="Search exams"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    className="w-3/5 rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base outline-none transition-all duration-300 focus:border-primary dark:bg-[#2C303B] dark:focus:border-primary"
-                />
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="ml-4 rounded-sm bg-primary px-6 py-3 text-white duration-300 hover:bg-primary/90"
-                >
-                    Create Exam
-                </button>
-            </div>
+                <div className="flex items-center mb-8 justify-between">
+                    <input
+                        type="text"
+                        placeholder="Search exams"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        className="w-3/5 rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base outline-none transition-all duration-300 focus:border-primary dark:bg-[#2C303B] dark:focus:border-primary"
+                    />
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="ml-4 rounded-sm bg-primary px-6 py-3 text-white duration-300 hover:bg-primary/90"
+                    >
+                        Create Exam
+                    </button>
+                </div>
 
                 <ul className="list-none">
                     {filteredExams.map((exam) => (
                     <li key={exam.id} className="mb-2 hover:bg-background-neutral-subtle"> 
-                    <Link href={`/exams/${exam.id}`}>
+                    <Link href={`/exams/${exam.id}/overview`}>
                         <div
                             className="border-border-divider -sm:border-b -sm:px-4 flex cursor-pointer flex-col gap-2 px-2 py-4 md:flex-row md:items-center md:justify-between md:rounded-lg !opacity-100"
                             role="button"

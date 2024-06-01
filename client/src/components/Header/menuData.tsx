@@ -84,7 +84,6 @@ const menuData: Menu[] = [
         path: "/exams",
         newTab: false,
       },
-      
     ],
   },
 ];
