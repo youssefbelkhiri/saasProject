@@ -3,8 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { metadata } from "./gradingMetadata";
-
+import { metadata } from "./studentsMetadata";
 import ErrorPage from '@/app/error/page';
 
 const fetchExamData = async (examId: any) => {
@@ -44,13 +43,13 @@ const ExamPage = () => {
               <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Overview</span>
             </Link>
             <Link href={`/exams/${examId}/questions`} passHref>
-              <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Questions</span>
+              <span className={`text-lg font-semibold text-primary hover:text-primary cursor-pointer`}>Questions</span>
             </Link>
             <Link href={`/exams/${examId}/students`} passHref>
-              <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Students</span>
+              <span className={`text-lg font-semibold text-black  dark:text-white hover:text-primary cursor-pointer`}>Students</span>
             </Link>
             <Link href={`/exams/${examId}/grading`} passHref>
-              <span className={`text-lg font-semibold text-primary hover:text-primary cursor-pointer`}>Grading</span>
+              <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Grading</span>
             </Link>
             <Link href={`/exams/${examId}/reports`} passHref>
               <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Reports</span>
@@ -58,7 +57,7 @@ const ExamPage = () => {
           </nav>
         </div>
         <div className="container mx-auto p-4">
-          <p>Grading Page</p>
+          <p>Questions Page</p>
           <h1 className="text-3xl font-bold mb-4">{exam.name}</h1>
           <p><strong>Language:</strong> {exam.language}</p>
           <p><strong>Description:</strong> {exam.description}</p>

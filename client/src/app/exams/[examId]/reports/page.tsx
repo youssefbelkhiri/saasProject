@@ -42,6 +42,9 @@ const ExamPage = () => {
             <Link href={`/exams/${examId}/overview`} passHref>
               <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Overview</span>
             </Link>
+            <Link href={`/exams/${examId}/questions`} passHref>
+              <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Questions</span>
+            </Link>
             <Link href={`/exams/${examId}/students`} passHref>
               <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Students</span>
             </Link>
