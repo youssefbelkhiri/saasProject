@@ -23,9 +23,14 @@ export class UsersAuthService {
     return { message: 'error' };
   }
   async cofirmeEmail(email: string) {
-    return this.prisma.user.update({
+    const conf = await this.prisma.user.update({
       where: { email },
       data: { isEmailConfirmed: true },
     });
+    if (conf) {
+      return { message: 'you can login now' };
+    } else {
+      return { message: 'error' };
+    }
   }
 }
