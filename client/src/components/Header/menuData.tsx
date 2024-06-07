@@ -73,15 +73,21 @@ const menuData: Menu[] = [
         newTab: false,
       },
       {
-        id: 48,
+        id: 49,
         title: "Profile Page",
         path: "/profile",
         newTab: false,
       },
       {
-        id: 48,
+        id: 50,
         title: "Exams Page",
         path: "/exams",
+        newTab: false,
+      },
+      {
+        id: 51,
+        title: "Students Page",
+        path: "/students",
         newTab: false,
       },
     ],

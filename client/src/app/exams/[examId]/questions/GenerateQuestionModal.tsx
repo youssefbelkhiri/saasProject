@@ -86,7 +86,8 @@ const GenerateQuestionModal = ({ isOpen, onClose }) => {
                 <p className="m-0 text-md text-content-primary font-semibold dark:text-white">Questions generator</p>
                 {isGenerated && (
                   <button className="flex items-center mr-3 text-blue-500 ml-2" onClick={handleBackClick}>
-                    <img src="https://img.icons8.com/?size=100&id=39944&format=png&color=000000" style={{ height: '32px' }}/>
+                    {/* <img src="https://img.icons8.com/?size=100&id=39944&format=png&color=000000" style={{ height: '32px' }}/> */}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#4a6cf7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                     Back
                   </button>
                 )}
