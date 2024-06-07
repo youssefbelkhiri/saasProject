@@ -16,7 +16,7 @@ const fetchExamData = async (examId) => {
   return exams.find(exam => exam.id === parseInt(examId));
 };
 
-const ExamPage = () => {
+const OverviewPage = () => {
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
   const [formData, setFormData] = useState({
@@ -224,4 +224,4 @@ const ExamPage = () => {
   );
 };
 
-export default ExamPage;
+export default OverviewPage;
