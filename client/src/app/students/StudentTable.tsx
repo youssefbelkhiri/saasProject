@@ -1,5 +1,4 @@
-// StudentTable.js
-const StudentTable = ({ students, onDeleteStudent }) => {
+const StudentTable = ({ students, onDeleteStudent, onEditStudent }) => {
   return (
     <table className="w-full mt-4">
       <thead>
@@ -21,8 +20,8 @@ const StudentTable = ({ students, onDeleteStudent }) => {
               {student.groups.length > 0 ? student.groups.join(', ') : 'No Groups'}
             </td>
             <td className="border px-4 py-2">
-              <button className="text-blue-500 mr-2">Edit</button>
               <button onClick={() => onDeleteStudent(student.id)} className="text-red-500 mr-2">Delete</button>
+              <button onClick={() => onEditStudent(student)} className="text-blue-500">Edit</button>
             </td>
           </tr>
         ))}

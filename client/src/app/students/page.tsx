@@ -4,13 +4,16 @@ import React, { useState, useEffect } from "react";
 import Breadcrumb from "@/components/Common/Breadcrumb";
 import ManageGroupsModal from "./ManageGroupsModal";
 import AddStudentModal from "./AddStudentModal";
+import EditStudentModal from "./EditStudentModal";
 import StudentTable from "./StudentTable";
 
 const StudentsPage = () => {
   const [isManageGroupsModalOpen, setIsManageGroupsModalOpen] = useState(false);
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
+  const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false);
   const [students, setStudents] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const sampleStudents = [
@@ -36,6 +39,10 @@ const StudentsPage = () => {
     setStudents(students.filter((student) => student.id !== studentId));
   };
 
+  const updateStudent = (updatedStudent) => {
+    setStudents(students.map((student) => (student.id === updatedStudent.id ? updatedStudent : student)));
+  };
+
   const manageGroups = () => {
     setIsManageGroupsModalOpen(true);
   };
@@ -51,6 +58,17 @@ const StudentsPage = () => {
 
   const closeAddStudentModal = () => {
     setIsAddStudentModalOpen(false);
+    fetchStudentsAndGroups();
+  };
+
+  const openEditStudentModal = (student) => {
+    setSelectedStudent(student);
+    setIsEditStudentModalOpen(true);
+  };
+
+  const closeEditStudentModal = () => {
+    setIsEditStudentModalOpen(false);
+    setSelectedStudent(null);
     fetchStudentsAndGroups();
   };
 
@@ -96,12 +114,13 @@ const StudentsPage = () => {
               </button>
             </div>
           </div>
-          <StudentTable students={filteredStudents} onDeleteStudent={deleteStudent} />
+          <StudentTable students={filteredStudents} onDeleteStudent={deleteStudent} onEditStudent={openEditStudentModal} />
         </div>
       </section>
 
       <ManageGroupsModal isOpen={isManageGroupsModalOpen} onClose={closeManageGroupsModal} groups={groups} />
       <AddStudentModal isOpen={isAddStudentModalOpen} onClose={closeAddStudentModal} groups={groups} />
+      <EditStudentModal isOpen={isEditStudentModalOpen} onClose={closeEditStudentModal} student={selectedStudent} onUpdateStudent={updateStudent} />
     </>
   );
 };
