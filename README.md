@@ -19,3 +19,18 @@
     "exam_id":1,
     "group_id":1
     }`
+
+
+#####
+
+Pull Containter to Docker :
+  `docker-compose up`
+
+Run prisma studop :
+  `npx prisma studio`
+
+  `npx prisma migrate dev --name init`
+
+cd server ; yarn run start
+cd client ; yarn dev
+cd server ; npx prisma studio

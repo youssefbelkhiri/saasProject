@@ -1,9 +1,20 @@
-import { Controller, Get, Patch, Delete, Body, Param, UseGuards, Request, HttpException } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  HttpException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard) 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
@@ -11,32 +22,34 @@ export class UsersController {
   @Get('/:id')
   async getUser(@Param('id') id: number, @Request() req) {
     const user = await this.userService.getUser(id);
-    if(req.user.id === user.id){
+    if (req.user.id === user.id) {
       return user;
-    }
-    else{
+    } else {
       throw new HttpException('Unauthorized', 401);
     }
   }
 
-  @Patch("/:id")
-  async updateUser(@Param('id') id: number, @Request() req,@Body() userData: UpdateUserDto){
+  @Patch('/:id')
+  async updateUser(
+    @Param('id') id: number,
+    @Request() req,
+    @Body() userData: UpdateUserDto,
+  ) {
     const user = await this.userService.getUser(id);
 
-    if(req.user.id !== user.id){
+    if (req.user.id !== user.id) {
       throw new HttpException('Unauthorized', 401);
     }
-    return await this.userService.updateUser(id,userData);
+    return await this.userService.updateUser(id, userData);
   }
 
-  @Delete("/:id")
-  async deleteUser(@Param('id') id: number, @Request() req){
+  @Delete('/:id')
+  async deleteUser(@Param('id') id: number, @Request() req) {
     const user = await this.userService.getUser(id);
-    
-    if(req.user.id !== user.id){
+
+    if (req.user.id !== user.id) {
       throw new HttpException('Unauthorized', 401);
     }
     return await this.userService.deleteUser(id);
   }
-
 }

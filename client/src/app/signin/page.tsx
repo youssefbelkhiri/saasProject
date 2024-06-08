@@ -1,12 +1,15 @@
 "use client";
 
-
 import { useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { metadata } from "./signinMetadata";
+import { useRouter } from "next/navigation";
+import { serialize } from "cookie";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-const SigninPage = () => {
+const SigninPage = (res: NextApiResponse, req: NextApiRequest) => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -23,13 +26,19 @@ const SigninPage = () => {
     console.log("Form Submitted", formData);
 
     try {
-      const response = await axios.post("http://localhost:3000/api/auth/login", formData);
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        formData,
+      );
       console.log(response.data);
-      // Handle successful login (e.g., redirect or display success message)
+
+      const { accesToken } = response.data;
+
+      localStorage.setItem("authToken", accesToken);
+      router.push("/profile");
     } catch (error) {
-      console.error("Error logging in:", error.response.data);
+      console.error("Error logging in:");
       setErrorMessage(error.response.data.message);
-      // Handle error (e.g., display error message)
     }
   };
 
@@ -39,7 +48,7 @@ const SigninPage = () => {
         <div className="container">
           <div className="-mx-4 flex flex-wrap">
             <div className="w-full px-4">
-              <div className="shadow-three mx-auto max-w-[500px] rounded bg-white px-6 py-10 dark:bg-dark sm:p-[60px]">
+              <div className="mx-auto max-w-[500px] rounded bg-white px-6 py-10 shadow-three dark:bg-dark sm:p-[60px]">
                 <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
                   Sign in to your account
                 </h3>
@@ -48,7 +57,10 @@ const SigninPage = () => {
                 </p>
 
                 {errorMessage && (
-                  <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                  <div
+                    className="relative mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
+                    role="alert"
+                  >
                     <span className="block sm:inline">{errorMessage}</span>
                   </div>
                 )}
@@ -67,7 +79,7 @@ const SigninPage = () => {
                       placeholder="Enter your Email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     />
                   </div>
                   <div className="mb-8">
@@ -83,11 +95,11 @@ const SigninPage = () => {
                       placeholder="Enter your Password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     />
                   </div>
                   <div className="mb-6">
-                    <button className="shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white duration-300 hover:bg-primary/90">
+                    <button className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark">
                       Sign in
                     </button>
                   </div>

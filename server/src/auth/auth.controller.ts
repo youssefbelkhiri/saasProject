@@ -25,15 +25,20 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  // async register(@Body() body: RegisterDto) {
+  //   const confirmed = await this.emailConfirmationService.sendVerificationLink(
+  //     body.email,
+  //   );
+  //   if (confirmed) {
+  //     return this.authService.register(body);
+  //   }
+  //   return { message: 'email unsent' };
+  // }
   async register(@Body() body: RegisterDto) {
-    const confirmed = await this.emailConfirmationService.sendVerificationLink(
-      body.email,
-    );
-    if (confirmed) {
-      return this.authService.register(body);
-    }
-    return { message: 'email unsent' };
+    await this.emailConfirmationService.sendVerificationLink(body.email);
+    return this.authService.register(body);
   }
+
   @Post(`confirmEmail`)
   async confirm(@Body() confirmEmailDto: ConfirmEmailDto) {
     const email = await this.emailConfirmationService.decodeToken(
@@ -53,7 +58,10 @@ export class AuthController {
   getProfile(@Request() req, @Res() response) {
     const { user } = req;
     const cookie = this.authService.getCookieWithJwtToken(user.id);
-    response.setHeader('Set-Cookie', cookie);
+    response.cookie('Set-Cookie', cookie, {
+      secure: false,
+      sameSite: 'none',
+    });
     return response.send(user);
   }
   @UseGuards(JwtAuthGuard)

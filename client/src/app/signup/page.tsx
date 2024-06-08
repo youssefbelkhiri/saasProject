@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import axios from "axios";
-import { metadata } from "./signupMetadata"; 
+import { metadata } from "./signupMetadata";
+
+
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     first_name: "",
@@ -48,7 +50,6 @@ const SignupPage = () => {
                 <p className="mb-11 text-center text-base font-medium text-body-color">
                   It’s totally free and super easy
                 </p>
-                
 
                 {message && (
                   <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">

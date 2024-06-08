@@ -4,6 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
   BadRequestException,
+  Res,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
@@ -14,6 +15,7 @@ import { UsersAuthService } from './users-auth.service';
 import { EmailConfirmationService } from './emailconfirmation.service';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -57,17 +59,14 @@ export class AuthService {
       throw new BadRequestException('Email is not confirmed');
     }
     const payload = { email: user.email, sub: user.id };
-    return {
-      accesToken: this.jwtService.sign(payload, {
-        secret: jwtConstants.secret,
-      }),
-    };
-  }
-  public getCookieWithJwtToken(userId: number) {
-    const payload = { userId };
-    const token = this.jwtService.sign(payload, {
+    const accessToken = await this.jwtService.sign(payload, {
       secret: jwtConstants.secret,
     });
+    return {
+      accesToken: accessToken,
+    };
+  }
+  public getCookieWithJwtToken(token: string) {
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
       'JWT_VERIFICATION_TOKEN_EXPIRATION_TIME',
     )}`;
