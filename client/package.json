@@ -21,6 +21,7 @@
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-modal-video": "^2.0.1",
+    "react-select": "^5.8.0",
     "recharts": "^2.12.7"
   },
   "devDependencies": {

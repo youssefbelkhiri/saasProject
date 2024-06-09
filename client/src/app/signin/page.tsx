@@ -3,18 +3,21 @@
 import { useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { metadata } from "./signinMetadata";
 import { useRouter } from "next/navigation";
-import { serialize } from "cookie";
-import type { NextApiRequest, NextApiResponse } from "next";
+import { useAuth } from "../../app/authMiddleware";
 
-const SigninPage = (res: NextApiResponse, req: NextApiRequest) => {
+const SigninPage = () => {
   const router = useRouter();
+  const { authToken, logIn } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [errorMessage, setErrorMessage] = useState("");
+
+  if (authToken) {
+    router.push("/");
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,15 +31,18 @@ const SigninPage = (res: NextApiResponse, req: NextApiRequest) => {
     try {
       const response = await axios.post(
         "http://localhost:3000/api/auth/login",
-        formData,
+        formData
       );
-      console.log(response.data);
 
-      const { accesToken } = response.data;
+      // console.log(response.data);
+      // const { accessToken } = response.data;
+      // localStorage.setItem("authToken", accessToken);
+      // console.log("access  s Token", response.data.accesToken);
 
-      localStorage.setItem("authToken", accesToken);
+      logIn(response.data.accesToken);
       router.push("/profile");
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error logging in:");
       setErrorMessage(error.response.data.message);
     }

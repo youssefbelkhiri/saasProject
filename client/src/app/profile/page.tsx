@@ -2,8 +2,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { useAuth } from "../../app/authMiddleware";
+import { useRouter } from "next/navigation";
 
 const ProfilePage = () => {
+  const router = useRouter();
+  const { authToken } = useAuth(); // Using the useAuth hook
   const [userData, setUserData] = useState({
     id: "",
     first_name: "",
@@ -14,39 +18,48 @@ const ProfilePage = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      const token = localStorage.getItem("authToken");
+    if (!authToken) {
+      router.push("/signin");
+    } else {
+      fetchProfileData();
+    }
+  }, [authToken]);
 
-      try {
-        const profileResponse = await axios.get("http://localhost:3000/api/auth/profile", {
+  const fetchProfileData = async () => {
+    try {
+      const profileResponse = await axios.get(
+        "http://localhost:3000/api/auth/profile",
+        {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authToken}`,
           },
-        });
-        const userId = profileResponse.data.id;
+        }
+      );
+      const userId = profileResponse.data.id;
 
-        const userResponse = await axios.get(`http://localhost:3000/api/users/${userId}`, {
+      const userResponse = await axios.get(
+        `http://localhost:3000/api/users/${userId}`,
+        {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authToken}`,
           },
-        });
+        }
+      );
 
-        const userData = {
-          id: userResponse.data.id || "",
-          first_name: userResponse.data.first_name || "",
-          last_name: userResponse.data.last_name || "",
-          email: userResponse.data.email || "",
-          phone: userResponse.data.phone || "",
-        };
+      const userData = {
+        id: userResponse.data.id || "",
+        first_name: userResponse.data.first_name || "",
+        last_name: userResponse.data.last_name || "",
+        email: userResponse.data.email || "",
+        phone: userResponse.data.phone || "",
+      };
 
-        setUserData(userData);
-      } catch (error) {
-        console.error("Error fetching profile data:", error.response.data);
-      }
-    };
-
-    fetchProfileData();
-  }, []); // Empty dependency array ensures the effect runs only once on mount
+      setUserData(userData);
+    } catch (error) {
+      console.error("Error fetching profile data:", error.response.data);
+      // router.push("/signin");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,7 +73,6 @@ const ProfilePage = () => {
     e.preventDefault();
     console.log("Form Submitted", userData);
 
-    const token = localStorage.getItem("authToken");
     try {
       const response = await axios.patch(
         `http://localhost:3000/api/users/${userData.id}`,
@@ -71,7 +83,7 @@ const ProfilePage = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );
@@ -81,7 +93,6 @@ const ProfilePage = () => {
       console.error("Error updating profile:", error);
     }
   };
-
   return (
     <>
       <section className="relative z-10 overflow-hidden pb-16 pt-36 md:pb-20 lg:pb-28 lg:pt-[180px]">
@@ -97,10 +108,6 @@ const ProfilePage = () => {
                 </p>
 
                 {successMessage && (
-                  // <div className="mb-4 text-center text-green-500">
-                  //   {successMessage}
-                  // </div>
-
                   <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
                     <span className="font-medium">{successMessage}</span>
                   </div>
