@@ -1,63 +1,82 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { metadata } from "./profileMetadata";
-import type { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
-import { Session } from "inspector";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState({
     id: "",
     first_name: "",
-    Last_name: "",
+    last_name: "",
     email: "",
     phone: "",
   });
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const token = localStorage.getItem("authToken");
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const token = localStorage.getItem("authToken");
 
-  axios
-    .get("http://localhost:3000/api/auth/profile", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    .then((res) => {
-      console.log(res.data);
-      axios
-        .get(`http://localhost:3000/api/users/${res.data.id}`)
-        .then((resp) => {
-          setUserData({
-            id: resp.data.id || "",
-            first_name: resp.data.firstName || "",
-            Last_name: resp.data.lastName || "",
-            email: resp.data.email || "",
-            phone: resp.data.phone || "",
-          });
+      try {
+        const profileResponse = await axios.get("http://localhost:3000/api/auth/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-    })
-    .catch((error) => {
-      console.error("Error fetching profile data:", error.response.data);
-    });
+        const userId = profileResponse.data.id;
+
+        const userResponse = await axios.get(`http://localhost:3000/api/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const userData = {
+          id: userResponse.data.id || "",
+          first_name: userResponse.data.first_name || "",
+          last_name: userResponse.data.last_name || "",
+          email: userResponse.data.email || "",
+          phone: userResponse.data.phone || "",
+        };
+
+        setUserData(userData);
+      } catch (error) {
+        console.error("Error fetching profile data:", error.response.data);
+      }
+    };
+
+    fetchProfileData();
+  }, []); // Empty dependency array ensures the effect runs only once on mount
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserData({ ...userData, [name]: value });
+    setUserData((prevUserData) => ({
+      ...prevUserData,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form Submitted", userData);
 
+    const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/profile/update",
-        userData,
+      const response = await axios.patch(
+        `http://localhost:3000/api/users/${userData.id}`,
+        {
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          phone: userData.phone,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       console.log(response.data);
+      setSuccessMessage("Your information has been updated successfully.");
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -77,6 +96,16 @@ const ProfilePage = () => {
                   Keep your information up-to-date
                 </p>
 
+                {successMessage && (
+                  // <div className="mb-4 text-center text-green-500">
+                  //   {successMessage}
+                  // </div>
+
+                  <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+                    <span className="font-medium">{successMessage}</span>
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit}>
                   <div className="mb-8">
                     <label
@@ -87,7 +116,7 @@ const ProfilePage = () => {
                     </label>
                     <input
                       type="text"
-                      name="firstName"
+                      name="first_name"
                       placeholder="Enter your first name"
                       value={userData.first_name}
                       onChange={handleChange}
@@ -103,9 +132,9 @@ const ProfilePage = () => {
                     </label>
                     <input
                       type="text"
-                      name="lastName"
+                      name="last_name"
                       placeholder="Enter your last name"
-                      value={userData.Last_name}
+                      value={userData.last_name}
                       onChange={handleChange}
                       className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     />
@@ -165,61 +194,6 @@ const ProfilePage = () => {
           </div>
         </div>
         <div className="z-[-1 absolute left-0 top-0">
-          {/* <svg
-            width="1440"
-            height="969"
-            viewBox="0 0 1440 969"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-        <mask
-            id="mask0_95:1005"
-            style={{ maskType: "alpha" }}
-            maskUnits="userSpaceOnUse"
-            x="0"
-            y="0"
-            width="1440"
-            height="969"
-        >
-        <rect width="1440" height="969" fill="#090E34" />
-        </mask>
-        <g mask="url(#mask0_95:1005)">
-        <path
-                    opacity="0.1"
-                    d="M1086.96 297.978L632.959 554.978L935.625 535.926L1086.96 297.978Z"
-                    fill="url(#paint0_linear_95:1005)"
-                />
-        <path
-                    opacity="0.1"
-                    d="M1324.5 755.5L1450 687V886.5L1324.5 967.5L-10 288L1324.5 755.5Z"
-                    fill="url(#paint1_linear_95:1005)"
-                />
-        </g>
-        <defs>
-        <linearGradient
-                    id="paint0_linear_95:1005"
-                    x1="1178.4"
-                    y1="151.853"
-                    x2="780.959"
-                    y2="453.581"
-                    gradientUnits="userSpaceOnUse"
-                >
-        <stop stopColor="#4A6CF7" />
-        <stop offset="1" stopColor="#4A6CF7" stopOpacity="0" />
-        </linearGradient>
-        <linearGradient
-                    id="paint1_linear_95:1005"
-                    x1="160.5"
-                    y1="220"
-                    x2="1099.45"
-                    y2="1192.04"
-                    gradientUnits="userSpaceOnUse"
-                >
-        <stop stopColor="#4A6CF7" />
-        <stop offset="1" stopColor="#4A6CF7" stopOpacity="0" />
-        </linearGradient>
-        </defs>
-        </svg> */}
         </div>
       </section>
     </>
