@@ -7,7 +7,7 @@ import ThemeToggler from "./ThemeToggler";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import menuData from "./menuData";
-import userMenuData from "./menuData";
+import userMenuData from "./userMenuData";
 import { useAuth } from "../../app/authMiddleware";
 
 const Header = () => {

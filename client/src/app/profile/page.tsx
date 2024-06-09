@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 const ProfilePage = () => {
   const router = useRouter();
-  const { authToken } = useAuth(); // Using the useAuth hook
+  const { authToken } = useAuth();
   const [userData, setUserData] = useState({
     id: "",
     first_name: "",
