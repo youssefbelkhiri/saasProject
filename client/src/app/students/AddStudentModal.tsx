@@ -8,7 +8,6 @@ const AddStudentModal = ({ isOpen, onClose, groups }) => {
     first_name: "",
     last_name: "",
     groups: groups,
-    user_id: 11,
   });
 
   const options = groups.map((group) => ({
@@ -37,7 +36,6 @@ const AddStudentModal = ({ isOpen, onClose, groups }) => {
         first_name: "",
         last_name: "",
         groups: [],
-        user_id: 11,
       });
       onClose();
     } catch (error) {

@@ -47,11 +47,11 @@ export class StudentsService {
   }
 
   async createStudent(studentDto: CreateStudentDto, userId: number) {
-    const { user_id, groups, ...restDto } = studentDto;
+    const { groups, ...restDto } = studentDto;
 
-    if (user_id != userId) {
-      throw new HttpException('Unauthorized', 401);
-    }
+    // if (user_id != userId) {
+    //   throw new HttpException('Unauthorized', 401);
+    // }
 
     if (groups && Array.isArray(groups)) {
       const group_ids = groups.map((group_id) => ({ group_id: group_id }));
@@ -84,7 +84,7 @@ export class StudentsService {
     studentDto: UpdateStudentDto,
     userId: number,
   ) {
-    const { user_id, groups, ...restDto } = studentDto;
+    const { groups, ...restDto } = studentDto;
 
     const existingStudent = await this.prisma.students.findUnique({
       where: { student_id: +id },
@@ -95,9 +95,9 @@ export class StudentsService {
       throw new NotFoundException(`Can't find this student: ${id}`);
     }
 
-    if (!existingStudent.groups.some((group) => group.user_id === userId)) {
-      throw new HttpException('Unauthorized', 401);
-    }
+    // if (!existingStudent.groups.some((group) => group.user_id === userId)) {
+    //   throw new HttpException('Unauthorized', 401);
+    // }
 
     if (groups && Array.isArray(groups)) {
       const group_ids = groups.map((group_id) => ({ group_id: group_id }));
