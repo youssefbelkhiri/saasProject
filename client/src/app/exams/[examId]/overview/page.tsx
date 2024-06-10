@@ -9,6 +9,8 @@ import { useAuth } from "../../../authMiddleware";
 
 const OverviewPage = () => {
   // const { authToken, userId } = useAuth();
+  const authToken = localStorage.getItem("authToken");
+
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
   const [message, setMessage] = useState("");
@@ -20,7 +22,6 @@ const OverviewPage = () => {
     total_point: "",
     exam_time: "",
   });
-  const authToken = localStorage.getItem("authToken");
   useEffect(() => {
     if (examId) {
       axios
@@ -63,6 +64,7 @@ const OverviewPage = () => {
       description: formData.description,
       exam_time: parseInt(formData.exam_time),
       total_point: parseInt(formData.total_point),
+      // user_id: userId
     };
 
     console.log(updatedFormData);
