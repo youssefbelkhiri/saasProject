@@ -308,7 +308,7 @@ const CreateQuestionModal = ({
           { optionOrder: 0, option: "", correct: false },
           { optionOrder: 1, option: "", correct: false },
         ],
-        exam_id: 0,
+        exam_id: Number(examId),
       });
       onClose();
     } catch (error) {

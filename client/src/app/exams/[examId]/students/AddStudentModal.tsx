@@ -1,56 +1,113 @@
 // AddStudentModal.tsx
 
-import { useState } from 'react';
-import Select from 'react-select';
-import StudentTableModal from './StudentTableModal';
+import { useEffect, useRef, useState } from "react";
+import Select from "react-select";
+import StudentTableModal from "./StudentTableModal";
+import axios from "axios";
 
-const AddStudentModal = ({ isOpen, onClose }) => {
+const AddStudentModal = ({ isOpen, onClose, examId }) => {
   const [newStudent, setNewStudent] = useState({
-    studentNumber: '',
-    firstName: '',
-    lastName: '',
+    studentNumber: "",
+    firstName: "",
+    lastName: "",
     groups: [],
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
+  interface Paper {
+    studentIds: number[];
+    exams_id: number;
+  }
+
+  const [paperOfStudents, setPaperOfStudents] = useState<Paper>({
+    studentIds: [],
+    exams_id: Number(examId),
+  });
+
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [groups, setGroups] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState([]);
+  const [Students, setStudents] = useState([]);
 
   // Sample list of groups
-  const groups = ["Group A", "Group B", "Group C", "Group D"];
+  // const groups = ["Group A", "Group B", "Group C", "Group D"];
+  const allStudentsRef = useRef([]);
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const authToken = localStorage.getItem("authToken");
+
+        const groupsResponse = await axios.get(
+          "http://localhost:3000/api/groups",
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          },
+        );
+        console.log(groupsResponse.data);
+        setGroups(groupsResponse.data);
+        const allStudents = groupsResponse.data.flatMap((group) =>
+          group.students.map((student) => ({
+            ...student,
+            groups: [group.name],
+          })),
+        );
+        console.log(allStudents);
+        allStudentsRef.current = allStudents;
+        setStudents(allStudents);
+      } catch (error) {
+        console.error("Error fetching students and groups:", error);
+      }
+    };
+
+    fetchGroups();
+  }, []);
+
+  const updateFilteredStudents = (selectedGroupId) => {
+    console.log(selectedGroupId);
+    if (selectedGroupId === "All") {
+      setStudents(allStudentsRef.current);
+    } else {
+      const filteredStudents = allStudentsRef.current.filter((student) =>
+        student.groups.includes(selectedGroupId),
+      );
+      setStudents(filteredStudents);
+    }
+  };
+
+  useEffect(() => {
+    console.log("Selected students:", Students);
+  }, [Students]);
 
   const options = [
-    { value: 'All', label: 'All' },
-    ...groups.map((group) => ({ value: group, label: group })),
+    { value: "All", label: "All" },
+    ...groups.map((group) => ({ value: group.group_id, label: group.name })),
   ];
 
   const deleteStudent = (studentId) => {
     // Implement delete functionality here
   };
 
-  // Sample list of students
-  const sampleStudents = [
-    { id: 1, studentNumber: "1001", firstName: "John", lastName: "Doe", groups: ["Group A", "Group B"] },
-    { id: 2, studentNumber: "1002", firstName: "Jane", lastName: "Smith", groups: ["Group B"] },
-    { id: 3, studentNumber: "1003", firstName: "Michael", lastName: "Johnson", groups: [] },
-    { id: 4, studentNumber: "1004", firstName: "Emily", lastName: "Brown", groups: ["Group C", "Group D"] },
-    { id: 5, studentNumber: "1005", firstName: "David", lastName: "Wilson", groups: ["Group A"] },
-  ];
-
-  const filteredStudents = sampleStudents.filter((student) => {
-    const includesQuery = `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchQuery.toLowerCase());
-    const includesGroup = selectedGroup && selectedGroup.value !== 'All' ? student.groups.includes(selectedGroup.value) : true;
-    return includesQuery && includesGroup;
-  });
+  // const filteredStudents = selectedStudents.filter((student) => {
+  //   const includesQuery = `${student.first_name} ${student.last_name}`
+  //     .toLowerCase()
+  //     .includes(searchQuery.toLowerCase());
+  //   const includesGroup =
+  //     selectedGroup && selectedGroup.value !== "All"
+  //       ? student.groups.includes(selectedGroup.value)
+  //       : true;
+  //   return includesQuery && includesGroup;
+  // });
 
   const toggleSelectAll = () => {
-    setSelectAll(!selectAll);
-    if (!selectAll) {
-      setSelectedStudents(filteredStudents.map(student => student.id));
-    } else {
+    if (selectAll) {
       setSelectedStudents([]);
+    } else {
+      setSelectedStudents(Students.map((student) => student.student_id));
     }
+    setSelectAll(!selectAll);
   };
 
   const toggleStudentSelection = (studentId) => {
@@ -67,41 +124,79 @@ const AddStudentModal = ({ isOpen, onClose }) => {
   };
 
   const addStudent = async () => {
-    console.log('New Student Data:', newStudent);
+    console.log("Selected Student IDs:", selectedStudents);
+    setPaperOfStudents({
+      studentIds: selectedStudents,
+      exams_id: Number(examId),
+    });
+    console.log(paperOfStudents);
+    try {
+      const authToken = localStorage.getItem("authToken");
+
+      const response = await axios.post(
+        "http://localhost:3000/api/papers/createPapers",
+        paperOfStudents,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error creating students paper", error);
+    }
   };
 
   return (
     isOpen && (
-      <div className="fixed z-10 inset-0 overflow-y-auto">
-        <div className="flex items-center justify-center min-h-screen">
+      <div className="fixed inset-0 z-10 overflow-y-auto">
+        <div className="flex min-h-screen items-center justify-center">
           <div className="fixed inset-0 bg-gray-500 opacity-75"></div>
-          <div className="relative bg-white p-6 rounded-lg shadow-xl dark:bg-dark overflow-y-auto overflow-x-hidden fixed justify-center items-center w-4/5 max-w-7xl mx-auto z-20">
-            <button className="absolute top-0 right-0 mt-4 mr-4 text-gray-500 hover:text-gray-700" onClick={onClose}>
-              <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <div className="fixed relative z-20 mx-auto w-4/5 max-w-7xl items-center justify-center overflow-y-auto overflow-x-hidden rounded-lg bg-white p-6 shadow-xl dark:bg-dark">
+            <button
+              className="absolute right-0 top-0 mr-4 mt-4 text-gray-500 hover:text-gray-700"
+              onClick={onClose}
+            >
+              <svg
+                className="h-6 w-6"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
-            <h2 className="text-lg font-semibold mb-4">Add Students to Exam</h2>
+            <h2 className="mb-4 text-lg font-semibold">Add Students to Exam</h2>
 
-            <div className='mt-10'>
-              <div className="w-full mb-6">
+            <div className="mt-10">
+              <div className="mb-6 w-full">
                 <input
                   type="text"
                   placeholder="Search students..."
-                  className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-800 dark:text-white w-full"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none dark:bg-gray-800 dark:text-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <div className="w-full mb-6">
+              <div className="mb-6 w-full">
                 <Select
                   options={options}
                   defaultValue={options[0]}
-                  onChange={(selectedOption) => setSelectedGroup(selectedOption)}
-                  className='text-primary'
+                  onChange={(selectedOption) => {
+                    setSelectedGroup(selectedOption);
+                    updateFilteredStudents(selectedOption.label);
+                  }}
+                  className="text-primary"
                 />
               </div>
-              <table className="w-full mt-4">
+              <table className="mt-4 w-full">
                 <thead>
                   <tr>
                     <th className="border px-4 py-2">
@@ -119,30 +214,55 @@ const AddStudentModal = ({ isOpen, onClose }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((student) => (
-                    <tr key={student.id} className={selectedStudents.includes(student.id) ? 'bg-gray-200 dark:bg-gray-500' : ''}>
+                  {Students.map((student) => (
+                    <tr
+                      key={student.student_id}
+                      className={
+                        selectedStudents.includes(student.student_id)
+                          ? "bg-gray-200 dark:bg-gray-500"
+                          : ""
+                      }
+                    >
                       <td className="border px-4 py-2">
                         <input
                           type="checkbox"
-                          checked={selectedStudents.includes(student.id)}
-                          onChange={() => toggleStudentSelection(student.id)}
+                          checked={selectedStudents.includes(
+                            student.student_id,
+                          )}
+                          onChange={() =>
+                            toggleStudentSelection(student.student_id)
+                          }
                           className="h-4 w-4 text-blue-500"
                         />
                       </td>
-                      <td className="border px-4 py-2">{student.studentNumber}</td>
-                      <td className="border px-4 py-2">{student.firstName}</td>
-                      <td className="border px-4 py-2">{student.lastName}</td>
                       <td className="border px-4 py-2">
-                        {student.groups.length > 0 ? student.groups.join(', ') : 'No Groups'}
+                        {student.student_number}
+                      </td>
+                      <td className="border px-4 py-2">{student.first_name}</td>
+                      <td className="border px-4 py-2">{student.last_name}</td>
+                      <td className="border px-4 py-2">
+                        {student.groups?.length > 0
+                          ? student.groups.join(", ")
+                          : "No Groups"}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="flex justify-end mt-4">
-              <button className="bg-red-500 text-white px-4 py-2 rounded mr-4" onClick={onClose}>Cancel</button>
-              <button className="bg-primary text-white px-4 py-2 rounded" onClick={addStudent}>Add Students</button>
+            <div className="mt-4 flex justify-end">
+              <button
+                className="mr-4 rounded bg-red-500 px-4 py-2 text-white"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded bg-primary px-4 py-2 text-white"
+                onClick={addStudent}
+              >
+                Add Students
+              </button>
             </div>
           </div>
         </div>

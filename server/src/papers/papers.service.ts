@@ -9,17 +9,36 @@ import * as path from 'path';
 export class PapersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findPapers(user_id: number){
+  async createPaper(studentIds: number[], exam_id: number) {
+    console.log(studentIds);
+    const createPaperPromises = studentIds.map((student_id) => {
+      return this.prisma.papers.create({
+        data: {
+          note: -1,
+          paper: '',
+          exam: { connect: { exam_id: +exam_id } },
+          student: { connect: { student_id: +student_id } },
+        },
+      });
+    });
+
+    // Wait for all the papers to be created
+    await Promise.all(createPaperPromises);
+
+    return;
+  }
+
+  async findPapers(user_id: number) {
     return await this.prisma.papers.findMany({
       where: {
         exam: {
           user_id: +user_id,
         },
       },
-    })
+    });
   }
 
-  async findPaper(id: number, user_id: number){
+  async findPaper(id: number, user_id: number) {
     const paper = await this.prisma.papers.findUnique({
       where: { paper_id: +id },
       include: {
@@ -30,15 +49,15 @@ export class PapersService {
         },
       },
     });
-  
+
     if (!paper) {
       throw new NotFoundException(`Can't find this paper: ${id}`);
     }
-  
+
     if (paper.exam.user_id !== user_id) {
       throw new HttpException('Unauthorized', 401);
     }
-  
+
     return paper;
   }
 
@@ -80,8 +99,8 @@ export class PapersService {
       },
     });
   }
-  
-  async updatePaper(id: number, paperDto: UpdatePapertDto, user_id: number){
+
+  async updatePaper(id: number, paperDto: UpdatePapertDto, user_id: number) {
     const paper = await this.prisma.papers.findUnique({
       where: { paper_id: +id },
       include: {
@@ -92,11 +111,11 @@ export class PapersService {
         },
       },
     });
-  
+
     if (!paper) {
       throw new NotFoundException(`Can't find paper with id: ${id}`);
     }
-  
+
     if (paper.exam.user_id !== user_id) {
       throw new HttpException('Unauthorized', 401);
     }
@@ -104,12 +123,12 @@ export class PapersService {
     return await this.prisma.papers.update({
       where: { paper_id: +id },
       data: {
-          ...paperDto
+        ...paperDto,
       },
     });
   }
 
-  async deletePaper(id: number, user_id: number){
+  async deletePaper(id: number, user_id: number) {
     const paper = await this.prisma.papers.findUnique({
       where: { paper_id: +id },
       include: {
@@ -133,11 +152,9 @@ export class PapersService {
 
     try {
       fs.unlinkSync(filePath);
-    } 
-    catch (error) {
+    } catch (error) {
       console.error('Error deleting file:', error.message);
     }
     return await this.prisma.papers.delete({ where: { paper_id: +id } });
   }
-
 }
