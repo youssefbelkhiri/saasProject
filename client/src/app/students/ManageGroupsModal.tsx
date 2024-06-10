@@ -1,13 +1,32 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const ManageGroupsModal = ({ isOpen, onClose, groups }) => {
-  const [groupsUser, setGroupsUser] = useState(groups);
+interface Group {
+  group_id: number;
+  name: string;
+  user_id: number;
+  students: any[];
+}
+
+interface ManageGroupsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  groups: Group[];
+}
+
+const ManageGroupsModal = ({
+  isOpen,
+  onClose,
+  groups,
+}: ManageGroupsModalProps) => {
+  const [groupsUser, setGroupsUser] = useState<Group[]>(groups);
   const [newGroupName, setNewGroupName] = useState("");
   const [editedGroupName, setEditedGroupName] = useState("");
-  const [selectedGroupId, setSelectedGroupId] = useState(null);
-  console.log(groups);
-  console.log(groupsUser);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+
+  useEffect(() => {
+    setGroupsUser(groups);
+  }, [groups]);
 
   const addGroup = async () => {
     if (newGroupName.trim() === "") {
@@ -26,9 +45,8 @@ const ManageGroupsModal = ({ isOpen, onClose, groups }) => {
         },
       );
       console.log("Group added successfully:", response.data);
-      const newGroup = response.data.id;
-      setGroupsUser([...groups, newGroup]);
-
+      const newGroup = response.data;
+      setGroupsUser((prevGroups) => [...prevGroups, newGroup]);
       setNewGroupName("");
     } catch (error) {
       console.error("Error adding group:", error);
@@ -52,12 +70,11 @@ const ManageGroupsModal = ({ isOpen, onClose, groups }) => {
           },
         },
       );
-      const updatedGroups = groups.map((group) => {
-        if (group.id === selectedGroupId) {
-          return { ...group, name: editedGroupName };
-        }
-        return group;
-      });
+      const updatedGroups = groupsUser.map((group) =>
+        group.group_id === selectedGroupId
+          ? { ...group, name: editedGroupName }
+          : group,
+      );
       setGroupsUser(updatedGroups);
       setEditedGroupName("");
       setSelectedGroupId(null);
@@ -66,7 +83,7 @@ const ManageGroupsModal = ({ isOpen, onClose, groups }) => {
     }
   };
 
-  const deleteGroup = async (groupId) => {
+  const deleteGroup = async (groupId: number) => {
     try {
       const authToken = localStorage.getItem("authToken");
       await axios.delete(`http://localhost:3000/api/groups/${groupId}`, {
@@ -142,11 +159,14 @@ const ManageGroupsModal = ({ isOpen, onClose, groups }) => {
                   key={group.group_id}
                   className="flex items-center justify-between border-b py-2"
                 >
-                  <span>{group.name}</span>
+                  <span>{group.name} </span>
                   <div>
                     <button
                       className="mr-2 text-blue-500"
-                      onClick={() => setSelectedGroupId(group.group_id)}
+                      onClick={() => {
+                        setSelectedGroupId(group.group_id);
+                        setEditedGroupName(group.name);
+                      }}
                     >
                       Edit
                     </button>

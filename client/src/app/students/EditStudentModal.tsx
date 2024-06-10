@@ -24,7 +24,10 @@ const EditStudentModal = ({
     setUpdatedStudent({ ...updatedStudent, groups: selectedGroups });
   };
 
-  const groupOptions = groups.map((group) => ({ value: group, label: group }));
+  const groupOptions = groups.map((group) => ({
+    value: group.group_id,
+    label: group.name,
+  }));
 
   return (
     isOpen && (
