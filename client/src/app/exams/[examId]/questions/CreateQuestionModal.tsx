@@ -1,91 +1,367 @@
-import React, { useState } from 'react';
+// import React, { useState } from "react";
 
-const CreateQuestionModal = ({ isOpen, onClose, handleCreateQuestion }) => {
-  const [questionData, setQuestionData] = useState({
-    name: '',
-    difficulty: 'easy',
-    options: ['', ''],
-    correctOption: null
+// const CreateQuestionModal = ({ isOpen, onClose, handleCreateQuestion }) => {
+//   const [questionData, setQuestionData] = useState({
+//     name: "",
+//     difficulty: "easy",
+//     options: ["", ""],
+//     correctOption: null,
+//   });
+
+//   const handleChange = (e, index) => {
+//     const { name, value, type } = e.target;
+//     if (name.startsWith("option")) {
+//       const updatedOptions = [...questionData.options];
+//       updatedOptions[index] = value;
+//       setQuestionData({
+//         ...questionData,
+//         options: updatedOptions,
+//       });
+//     } else if (type === "radio") {
+//       setQuestionData({
+//         ...questionData,
+//         [name]: parseInt(value),
+//       });
+//     } else {
+//       setQuestionData({
+//         ...questionData,
+//         [name]: value,
+//       });
+//     }
+//   };
+
+//   const handleAddOption = () => {
+//     setQuestionData({
+//       ...questionData,
+//       options: [...questionData.options, ""],
+//     });
+//   };
+
+//   const handleDeleteOption = (index) => {
+//     const updatedOptions = [...questionData.options];
+//     updatedOptions.splice(index, 1);
+//     setQuestionData({
+//       ...questionData,
+//       options: updatedOptions,
+//     });
+//   };
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     handleCreateQuestion(questionData);
+//     setQuestionData({
+//       name: "",
+//       difficulty: "easy",
+//       options: ["", ""],
+//       correctOption: null,
+//     });
+//   };
+
+//   return (
+//     <div
+//       className={`fixed inset-0 z-10 overflow-y-auto ${isOpen ? "block" : "hidden"}`}
+//     >
+//       <div className="flex min-h-screen items-center justify-center">
+//         <div className="fixed inset-0 bg-gray-500 opacity-75"></div>
+//         <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-dark">
+//           <button
+//             className="absolute right-0 top-0 mr-4 mt-4 text-gray-500 hover:text-gray-700"
+//             onClick={onClose}
+//           >
+//             <svg
+//               className="h-6 w-6"
+//               xmlns="http://www.w3.org/2000/svg"
+//               fill="none"
+//               viewBox="0 0 24 24"
+//               stroke="currentColor"
+//             >
+//               <path
+//                 strokeLinecap="round"
+//                 strokeLinejoin="round"
+//                 strokeWidth={2}
+//                 d="M6 18L18 6M6 6l12 12"
+//               />
+//             </svg>
+//           </button>
+//           <h2 className="mb-4 text-2xl font-bold">Create Question Manually</h2>
+//           <form onSubmit={handleSubmit}>
+//             <div className="mb-4">
+//               <label
+//                 className="mb-2 block text-sm font-bold"
+//                 htmlFor="questionName"
+//               >
+//                 Question Name
+//               </label>
+//               <input
+//                 type="text"
+//                 id="questionName"
+//                 name="name"
+//                 value={questionData.name}
+//                 onChange={handleChange}
+//                 className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+//               />
+//             </div>
+//             <div className="mb-4">
+//               <label
+//                 className="mb-2 block text-sm font-bold"
+//                 htmlFor="questionName"
+//               >
+//                 Question Name
+//               </label>
+//               <input
+//                 type="text"
+//                 id="questionName"
+//                 name="name"
+//                 value={questionData.name}
+//                 onChange={handleChange}
+//                 className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+//               />
+//             </div>
+//             <div className="mb-4">
+//               <label
+//                 className="mb-2 block text-sm font-bold"
+//                 htmlFor="difficulty"
+//               >
+//                 Difficulty
+//               </label>
+//               <select
+//                 id="difficulty"
+//                 name="difficulty"
+//                 value={questionData.difficulty}
+//                 onChange={handleChange}
+//                 className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+//               >
+//                 <option value="easy">Easy</option>
+//                 <option value="medium">Medium</option>
+//                 <option value="hard">Hard</option>
+//               </select>
+//             </div>
+//             <div className="mb-4">
+//               <label className="mb-2 block text-sm font-bold">Options</label>
+//               <ul className="mb-4">
+//                 {questionData.options.map((option, index) => (
+//                   <li key={index} className="mb-2 flex items-center">
+//                     <label htmlFor={`option${index}`} className="custom-radio">
+//                       <input
+//                         type="radio"
+//                         id={`option${index}`}
+//                         name="correctOption"
+//                         value={index}
+//                         checked={questionData.correctOption === index}
+//                         onChange={(e) => handleChange(e, index)}
+//                         className="mr-2 h-4 w-4"
+//                       />
+//                       <span className="radio-btn"></span>
+//                     </label>
+//                     <input
+//                       type="text"
+//                       id={`optionText${index}`}
+//                       name={`option${index}`}
+//                       value={option}
+//                       onChange={(e) => handleChange(e, index)}
+//                       className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+//                     />
+//                     <button
+//                       type="button"
+//                       className="ml-2 rounded border bg-gray-200 p-2  dark:bg-gray-600 dark:text-white"
+//                       onClick={() => handleDeleteOption(index)}
+//                     >
+//                       Delete
+//                     </button>
+//                   </li>
+//                 ))}
+//               </ul>
+//               <button
+//                 type="button"
+//                 className="w-full rounded border bg-gray-200 p-2 dark:bg-gray-600 dark:text-white"
+//                 onClick={handleAddOption}
+//               >
+//                 Add Option
+//               </button>
+//             </div>
+//             <button
+//               type="submit"
+//               className="w-full rounded border bg-primary p-2 text-white"
+//             >
+//               Create
+//             </button>
+//           </form>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default CreateQuestionModal;
+
+import React, { useState } from "react";
+import axios from "axios";
+
+interface CreateOptionDto {
+  optionOrder: number;
+  option: string;
+  correct: boolean;
+}
+
+interface CreateQuestionDto {
+  questionOrder: number;
+  content: string;
+  difficulty: string;
+  points: number;
+  options: CreateOptionDto[];
+  exam_id: number;
+}
+
+const CreateQuestionModal = ({
+  isOpen,
+  onClose,
+  handleCreateQuestion,
+  examId,
+}) => {
+  const [questionData, setQuestionData] = useState<CreateQuestionDto>({
+    questionOrder: 0, // You might want to manage this value appropriately
+    content: "",
+    difficulty: "easy",
+    points: 1, // Default points, adjust as necessary
+    options: [
+      { optionOrder: 0, option: "", correct: false },
+      { optionOrder: 1, option: "", correct: false },
+    ],
+    exam_id: Number(examId),
   });
 
-  const handleChange = (e, index) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    index?: number,
+  ) => {
     const { name, value, type } = e.target;
-    if (name.startsWith("option")) {
+    if (index !== undefined && name.startsWith("option")) {
       const updatedOptions = [...questionData.options];
-      updatedOptions[index] = value;
+      updatedOptions[index] = { ...updatedOptions[index], option: value };
       setQuestionData({
         ...questionData,
-        options: updatedOptions
+        options: updatedOptions,
       });
     } else if (type === "radio") {
+      const updatedOptions = questionData.options.map((option, idx) => ({
+        ...option,
+        correct: idx === parseInt(value),
+      }));
       setQuestionData({
         ...questionData,
-        [name]: parseInt(value)
+        options: updatedOptions,
       });
     } else {
       setQuestionData({
         ...questionData,
-        [name]: value
+        [name]: value,
       });
     }
   };
 
   const handleAddOption = () => {
+    const newOption: CreateOptionDto = {
+      optionOrder: questionData.options.length,
+      option: "",
+      correct: false,
+    };
     setQuestionData({
       ...questionData,
-      options: [...questionData.options, '']
+      options: [...questionData.options, newOption],
     });
   };
 
-  const handleDeleteOption = (index) => {
-    const updatedOptions = [...questionData.options];
-    updatedOptions.splice(index, 1);
+  const handleDeleteOption = (index: number) => {
+    const updatedOptions = questionData.options.filter((_, i) => i !== index);
     setQuestionData({
       ...questionData,
-      options: updatedOptions
+      options: updatedOptions.map((option, idx) => ({
+        ...option,
+        optionOrder: idx,
+      })),
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Call handleCreateQuestion function from parent component
-    handleCreateQuestion(questionData);
-    // Reset form data
-    setQuestionData({
-      name: '',
-      difficulty: 'easy',
-      options: ['', ''],
-      correctOption: null
-    });
+    console.log(questionData);
+    try {
+      const authToken = localStorage.getItem("authToken");
+      const response = await axios.post(
+        "http://localhost:3000/api/questions",
+        questionData,
+
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      );
+
+      handleCreateQuestion(response.data);
+      setQuestionData({
+        questionOrder: 0,
+        content: "",
+        difficulty: "easy",
+        points: 1,
+        options: [
+          { optionOrder: 0, option: "", correct: false },
+          { optionOrder: 1, option: "", correct: false },
+        ],
+        exam_id: 0,
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error creating question:", error);
+    }
   };
 
   return (
-    <div className={`fixed z-10 inset-0 overflow-y-auto ${isOpen ? 'block' : 'hidden'}`}>
-      <div className="flex items-center justify-center min-h-screen">
+    <div
+      className={`fixed inset-0 z-10 overflow-y-auto ${isOpen ? "block" : "hidden"}`}
+    >
+      <div className="flex min-h-screen items-center justify-center">
         <div className="fixed inset-0 bg-gray-500 opacity-75"></div>
-        <div className="relative bg-white w-full max-w-md p-6 rounded-lg shadow-xl dark:bg-dark">
-          <button className="absolute top-0 right-0 mt-4 mr-4 text-gray-500 hover:text-gray-700" onClick={onClose}>
-            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-dark">
+          <button
+            className="absolute right-0 top-0 mr-4 mt-4 text-gray-500 hover:text-gray-700"
+            onClick={onClose}
+          >
+            <svg
+              className="h-6 w-6"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
-          <h2 className="text-2xl font-bold mb-4">Create Question Manually</h2>
+          <h2 className="mb-4 text-2xl font-bold">Create Question Manually</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-sm font-bold mb-2" htmlFor="questionName">
-                Question Name
+              <label className="mb-2 block text-sm font-bold" htmlFor="content">
+                Question Content
               </label>
               <input
                 type="text"
-                id="questionName"
-                name="name"
-                value={questionData.name}
+                id="content"
+                name="content"
+                value={questionData.content}
                 onChange={handleChange}
-                className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                />
+                className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+              />
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-bold mb-2" htmlFor="difficulty">
+              <label
+                className="mb-2 block text-sm font-bold"
+                htmlFor="difficulty"
+              >
                 Difficulty
               </label>
               <select
@@ -93,51 +369,64 @@ const CreateQuestionModal = ({ isOpen, onClose, handleCreateQuestion }) => {
                 name="difficulty"
                 value={questionData.difficulty}
                 onChange={handleChange}
-                className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                >
+                className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+              >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
               </select>
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-bold mb-2">Options</label>
+              <label className="mb-2 block text-sm font-bold" htmlFor="points">
+                Points
+              </label>
+              <input
+                type="number"
+                id="points"
+                name="points"
+                value={questionData.points}
+                onChange={handleChange}
+                className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="mb-2 block text-sm font-bold">Options</label>
               <ul className="mb-4">
                 {questionData.options.map((option, index) => (
                   <li key={index} className="mb-2 flex items-center">
-                  <label htmlFor={`option${index}`} className="custom-radio">
+                    <label htmlFor={`option${index}`} className="custom-radio">
+                      <input
+                        type="radio"
+                        id={`option${index}`}
+                        name="correctOption"
+                        value={index}
+                        checked={option.correct}
+                        onChange={(e) => handleChange(e, index)}
+                        className="mr-2 h-4 w-4"
+                      />
+                      <span className="radio-btn"></span>
+                    </label>
                     <input
-                      type="radio"
-                      id={`option${index}`}
-                      name="correctOption"
-                      value={index}
-                      checked={questionData.correctOption === index}
+                      type="text"
+                      id={`optionText${index}`}
+                      name={`option${index}`}
+                      value={option.option}
                       onChange={(e) => handleChange(e, index)}
-                      className="mr-2 w-4 h-4"
+                      className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     />
-                    <span className="radio-btn"></span>
-                  </label>
-                  <input
-                    type="text"
-                    id={`optionText${index}`}
-                    name={`option${index}`}
-                    value={option}
-                    onChange={(e) => handleChange(e, index)}
-                    className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                    />
-                  <button
-                    type="button"
-                    className="ml-2 p-2 border rounded bg-gray-200  dark:bg-gray-600 dark:text-white"
-                    onClick={() => handleDeleteOption(index)}
-                  >
-                    Delete
-                  </button>
-                </li>
+                    <button
+                      type="button"
+                      className="ml-2 rounded border bg-gray-200 p-2 dark:bg-gray-600 dark:text-white"
+                      onClick={() => handleDeleteOption(index)}
+                    >
+                      Delete
+                    </button>
+                  </li>
                 ))}
               </ul>
               <button
                 type="button"
-                className="w-full p-2 border rounded bg-gray-200 dark:bg-gray-600 dark:text-white"
+                className="w-full rounded border bg-gray-200 p-2 dark:bg-gray-600 dark:text-white"
                 onClick={handleAddOption}
               >
                 Add Option
@@ -145,7 +434,7 @@ const CreateQuestionModal = ({ isOpen, onClose, handleCreateQuestion }) => {
             </div>
             <button
               type="submit"
-              className="w-full p-2 border rounded bg-primary text-white"
+              className="w-full rounded border bg-primary p-2 text-white"
             >
               Create
             </button>
@@ -153,7 +442,6 @@ const CreateQuestionModal = ({ isOpen, onClose, handleCreateQuestion }) => {
         </div>
       </div>
     </div>
-
   );
 };
 

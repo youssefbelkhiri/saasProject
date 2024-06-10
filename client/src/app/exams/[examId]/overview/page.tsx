@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import ErrorPage from '@/app/error/page';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import ErrorPage from "@/app/error/page";
+import axios from "axios";
 import { useAuth } from "../../../authMiddleware";
 
 const OverviewPage = () => {
-  const { authToken, userId } = useAuth();
+  // const { authToken, userId } = useAuth();
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
   const [message, setMessage] = useState("");
@@ -18,29 +18,30 @@ const OverviewPage = () => {
     exam_language: "English",
     description: "",
     total_point: "",
-    exam_time: ""
+    exam_time: "",
   });
-
+  const authToken = localStorage.getItem("authToken");
   useEffect(() => {
     if (examId) {
-      axios.get(`http://localhost:3000/api/exams/${examId}`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        }
-      })
-      .then(response => {
-        setExam(response.data);
-        setFormData({
-          name: response.data.name,
-          exam_language: response.data.exam_language,
-          description: response.data.description,
-          total_point: response.data.total_point,
-          exam_time: response.data.exam_time,
+      axios
+        .get(`http://localhost:3000/api/exams/${examId}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+        .then((response) => {
+          setExam(response.data);
+          setFormData({
+            name: response.data.name,
+            exam_language: response.data.exam_language,
+            description: response.data.description,
+            total_point: response.data.total_point,
+            exam_time: response.data.exam_time,
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching exam data:", error);
         });
-      })
-      .catch(error => {
-        console.error('Error fetching exam data:', error);
-      });
     }
   }, [examId, authToken]);
 
@@ -62,64 +63,88 @@ const OverviewPage = () => {
       description: formData.description,
       exam_time: parseInt(formData.exam_time),
       total_point: parseInt(formData.total_point),
-      user_id: userId
     };
-
 
     console.log(updatedFormData);
     try {
-      await axios.patch(`http://localhost:3000/api/exams/${examId}`, updatedFormData, {
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        }
-      });
+      await axios.patch(
+        `http://localhost:3000/api/exams/${examId}`,
+        updatedFormData,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      );
       setMessage("Exam updated successfully!");
-    } 
-    catch (error) {
-      console.error('Error updating exam:', error);
-      setMessage('Error updating exam');
+    } catch (error) {
+      console.error("Error updating exam:", error);
+      setMessage("Error updating exam");
     }
   };
 
-  const currentPath = typeof window !== "undefined" ? window.location.hash : '';
+  const currentPath = typeof window !== "undefined" ? window.location.hash : "";
 
   return (
     <>
       <section className="relative z-10 py-16 md:py-20 lg:py-28">
         <div className="mx-auto max-w-[90%] rounded-lg bg-white px-6 py-10 shadow-three dark:bg-dark sm:p-[60px] md:max-w-[70%] lg:max-w-[90%]">
-          <div className="container mx-auto text-center mb-12">
+          <div className="container mx-auto mb-12 text-center">
             <nav className="flex justify-center space-x-4">
               <Link href={`/exams/${examId}/overview`} passHref>
-                <span className={`text-lg font-semibold text-primary hover:text-primary cursor-pointer`}>Overview</span>
+                <span
+                  className={`cursor-pointer text-lg font-semibold text-primary hover:text-primary`}
+                >
+                  Overview
+                </span>
               </Link>
               <Link href={`/exams/${examId}/questions`} passHref>
-                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Questions</span>
+                <span
+                  className={`cursor-pointer text-lg font-semibold text-black hover:text-primary dark:text-white`}
+                >
+                  Questions
+                </span>
               </Link>
               <Link href={`/exams/${examId}/students`} passHref>
-                <span className={`text-lg font-semibold ${currentPath === `/exams/${examId}/students` ? 'text-primary' : 'text-black dark:text-white'} hover:text-primary cursor-pointer`}>Students</span>
+                <span
+                  className={`text-lg font-semibold ${currentPath === `/exams/${examId}/students` ? "text-primary" : "text-black dark:text-white"} cursor-pointer hover:text-primary`}
+                >
+                  Students
+                </span>
               </Link>
               <Link href={`/exams/${examId}/grading`} passHref>
-                <span className={`text-lg font-semibold ${currentPath === `/exams/${examId}/grading` ? 'text-primary' : 'text-black dark:text-white'} hover:text-primary cursor-pointer`}>Grading</span>
+                <span
+                  className={`text-lg font-semibold ${currentPath === `/exams/${examId}/grading` ? "text-primary" : "text-black dark:text-white"} cursor-pointer hover:text-primary`}
+                >
+                  Grading
+                </span>
               </Link>
               <Link href={`/exams/${examId}/reports`} passHref>
-                <span className={`text-lg font-semibold ${currentPath === `/exams/${examId}/reports` ? 'text-primary' : 'text-black dark:text-white'} hover:text-primary cursor-pointer`}>Reports</span>
+                <span
+                  className={`text-lg font-semibold ${currentPath === `/exams/${examId}/reports` ? "text-primary" : "text-black dark:text-white"} cursor-pointer hover:text-primary`}
+                >
+                  Reports
+                </span>
               </Link>
             </nav>
           </div>
 
-          <div className="container mx-auto p-4 flex flex-col md:flex-row">
-            <div className="w-full md:w-1/2 pr-4 mb-8 md:mb-0">
+          <div className="container mx-auto flex flex-col p-4 md:flex-row">
+            <div className="mb-8 w-full pr-4 md:mb-0 md:w-1/2">
               <form onSubmit={handleSubmit}>
                 {message && (
                   <div
-                    className="mb-4 relative mt-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-200"
+                    className="relative mb-4 mt-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-200"
                     role="alert"
                   >
                     <span className="block sm:inline">{message}</span>
                   </div>
                 )}
                 <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2" htmlFor="name">
+                  <label
+                    className="mb-2 block text-sm font-bold"
+                    htmlFor="name"
+                  >
                     Exam Name
                   </label>
                   <input
@@ -128,13 +153,16 @@ const OverviewPage = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                    className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     required
                   />
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2" htmlFor="exam_language">
+                  <label
+                    className="mb-2 block text-sm font-bold"
+                    htmlFor="exam_language"
+                  >
                     Language
                   </label>
                   <select
@@ -142,7 +170,7 @@ const OverviewPage = () => {
                     name="exam_language"
                     value={formData.exam_language}
                     onChange={handleChange}
-                    className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                    className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     required
                   >
                     <option value="English">English</option>
@@ -150,7 +178,10 @@ const OverviewPage = () => {
                   </select>
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2" htmlFor="description">
+                  <label
+                    className="mb-2 block text-sm font-bold"
+                    htmlFor="description"
+                  >
                     Description
                   </label>
                   <textarea
@@ -158,12 +189,15 @@ const OverviewPage = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                    className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     required
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2" htmlFor="total_point">
+                  <label
+                    className="mb-2 block text-sm font-bold"
+                    htmlFor="total_point"
+                  >
                     Total Points
                   </label>
                   <input
@@ -172,12 +206,15 @@ const OverviewPage = () => {
                     name="total_point"
                     value={formData.total_point}
                     onChange={handleChange}
-                    className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                    className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     required
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2" htmlFor="exam_time">
+                  <label
+                    className="mb-2 block text-sm font-bold"
+                    htmlFor="exam_time"
+                  >
                     Exam Time (minutes)
                   </label>
                   <input
@@ -186,21 +223,35 @@ const OverviewPage = () => {
                     name="exam_time"
                     value={formData.exam_time}
                     onChange={handleChange}
-                    className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                    className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
                     required
                   />
                 </div>
-                <button type="submit" className="shadow-submit dark:shadow-submit-dark flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white duration-300 hover:bg-primary/90">
+                <button
+                  type="submit"
+                  className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-white shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
+                >
                   Update
                 </button>
               </form>
             </div>
 
-            <div className="w-full md:w-1/2 flex justify-center ">
+            <div className="flex w-full justify-center md:w-1/2 ">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
-                  <div className='text-content-secondary flex items-center gap-1.5 p-1.5'>
-                    <svg className="text-md" stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="1.8em" width="1.8em" xmlns="http://www.w3.org/2000/svg">
+                  <div className="text-content-secondary flex items-center gap-1.5 p-1.5">
+                    <svg
+                      className="text-md"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      height="1.8em"
+                      width="1.8em"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                       <path d="M8 9h8"></path>
                       <path d="M8 13h6"></path>
@@ -210,11 +261,24 @@ const OverviewPage = () => {
                     </svg>
                     <p className="text-lg font-bold">Questions</p>
                   </div>
-                  <span className="text-lg">{exam ? `${exam.questions.length} questions` : '0'}</span>
-                  </div>
+                  <span className="text-lg">
+                    {exam ? `${exam.questions.length} questions` : "0"}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2">
-                  <div className='text-content-secondary flex items-center gap-1.5 p-1.5'>
-                    <svg className="text-md" stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="1.8em" width="1.8em" xmlns="http://www.w3.org/2000/svg">
+                  <div className="text-content-secondary flex items-center gap-1.5 p-1.5">
+                    <svg
+                      className="text-md"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      height="1.8em"
+                      width="1.8em"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                       <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"></path>
                       <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"></path>
@@ -225,18 +289,42 @@ const OverviewPage = () => {
                   <span className="text-lg">0 out of 20</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className='text-content-secondary flex items-center gap-1.5 p-1.5'>
-                    <svg className="text-md" stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="1.8em" width="1.8em" xmlns="http://www.w3.org/2000/svg">
+                  <div className="text-content-secondary flex items-center gap-1.5 p-1.5">
+                    <svg
+                      className="text-md"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      height="1.8em"
+                      width="1.8em"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                       <path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"></path>
                     </svg>
                     <p className="text-lg font-bold">Points</p>
                   </div>
-                  <span className="text-lg">{exam ? exam.total_point : '0'}</span>
+                  <span className="text-lg">
+                    {exam ? exam.total_point : "0"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className='text-content-secondary flex items-center gap-1.5 p-1.5'>
-                    <svg className="text-md" stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="1.8em" width="1.8em" xmlns="http://www.w3.org/2000/svg">
+                  <div className="text-content-secondary flex items-center gap-1.5 p-1.5">
+                    <svg
+                      className="text-md"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      height="1.8em"
+                      width="1.8em"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                       <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
                       <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>

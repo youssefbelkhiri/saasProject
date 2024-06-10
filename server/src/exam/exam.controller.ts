@@ -26,18 +26,15 @@ export class ExamController {
     return this.examService.findExams(req.user.id);
   }
 
-  @Get(':id')
+  @Get('/:id')
   async findExam(@Param('id') id: number, @Request() req) {
     const { user } = req;
     const userExam = await this.examService.findExam(id);
-    try {
-      if (user.id === userExam.user_id) {
-        return userExam;
-      } else {
-        throw new HttpException('Unauthorized', 401);
-      }
-    } catch {
-      return "Can't find exam";
+
+    if (user.id === userExam.user_id) {
+      return userExam;
+    } else {
+      throw new HttpException('Unauthorized', 401);
     }
   }
 
