@@ -1,78 +1,93 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { Hourglass } from 'react-loader-spinner';
 
-const GenerateQuestionModal = ({ isOpen, onClose }) => {
+const GenerateQuestionModal = ({ isOpen, onClose, language, examId, updateQuestionList }) => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [selectedOption, setSelectedOption] = useState(null);
   const [questions, setQuestions] = useState(null);
   const [isGenerated, setIsGenerated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [context, setContext] = useState('');
+  const [points, setPoints] = useState('');
+  const [addedQuestions, setAddedQuestions] = useState([]);
+  const [addedIndexes, setAddedIndexes] = useState([]);
 
-  const handleGenerateClick = () => {
-    const generatedQuestions = [
-      {
-        content: "When did the Tokugawa Shogunate fall?",
-        options: [
-          { option: "1868", correct: true },
-          { option: "1867", correct: false },
-          { option: "1866", correct: false },
-          { option: "1865", correct: false }
-        ]
-      },
-      {
-        content: "Which Japanese emperor was known as the 'Meiji Restoration Emperor'?",
-        options: [
-          { option: "Meiji", correct: true },
-          { option: "Yoshihito", correct: false },
-          { option: "Hirohito", correct: false },
-          { option: "Akito", correct: false }
-        ]
-      },
-      {
-        content: "Which of the following was not a part of the 'Big Three' of the Pacific War?",
-        options: [
-          { option: "Japan", correct: false },
-          { option: "United States", correct: true },
-          { option: "United Kingdom", correct: false },
-          { option: "China", correct: false }
-        ]
-      },
-      {
-        content: "Which of the following was not a major city of the Edo period?",
-        options: [
-          { option: "Kyoto", correct: false },
-          { option: "Tokyo", correct: false },
-          { option: "Osaka", correct: true },
-          { option: "Nagoya", correct: false }
-        ]
-      },
-      {
-        content: "What was the name of the first shogun of the Tokugawa Shogunate?",
-        options: [
-          { option: "Toyotomi Hideyoshi", correct: false },
-          { option: "Ieyasu Tokugawa", correct: true },
-          { option: "Napoleon Bonaparte", correct: false },
-          { option: "Oda Nobunaga", correct: false }
-        ]
-      },
-      {
-        content: "Which of the following was not a major religion in Japan during the Edo period?",
-        options: []
-      },
-      {
-        content: "What was the name of the Japanese battleship that was sunk at the Battle of Midway?",
-        options: [
-          { option: "Akagi", correct: true },
-          { option: "Kaga", correct: false },
-          { option: "Hiryu", correct: false }
-        ]
-      }
-    ];
-    setQuestions(generatedQuestions);
-    setIsGenerated(true);
+
+
+  const handleGenerateClick = async () => {
+    const authToken = localStorage.getItem("authToken");
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/questions/gen', {
+        content: context,
+        nbrOptions: selectedOption || 4,
+        difficulty: selectedDifficulty || 'easy',
+        language: language || 'english',
+        points: points || 2,
+      }, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        }
+      });
+      console.log('Questions generated:', response.data);
+      setQuestions(response.data);
+      setIsGenerated(true);
+    } catch (error) {
+      console.error('Error generating questions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddToExam = async (question, index) => {
+    const authToken = localStorage.getItem("authToken");
+
+    setAddedQuestions([...addedQuestions, index]);
+
+    const formattedOptions = question.options.map((option, index) => ({
+      optionOrder: index + 1,
+      option: option.option,
+      correct: option.correct,
+    }));
+
+    const questionData = {
+      questionOrder: 1,
+      difficulty: selectedDifficulty,
+      points: Number(points),
+      content: question.content,
+      exam_id: Number(examId),
+      options: formattedOptions,
+    };
+
+    console.log('Adding question to exam:', questionData)
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/questions/', questionData, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        }
+      });
+      console.log('Question added to exam:', response.data);
+      
+        setAddedIndexes([...addedIndexes, index]);
+        setAddedQuestions([...addedQuestions, question]);
+        updateQuestionList(question);
+    } catch (error) {
+      console.error('Error adding question to exam:', error);
+      setAddedQuestions(addedQuestions.filter(i => i !== index));
+      setAddedIndexes(addedIndexes.filter(i => i !== index));
+
+    }
   };
 
   const handleBackClick = () => {
     setIsGenerated(false);
     setQuestions(null);
+    setAddedQuestions([]);
+    setAddedIndexes([]);
   };
 
   return (
@@ -86,17 +101,20 @@ const GenerateQuestionModal = ({ isOpen, onClose }) => {
                 <p className="m-0 text-md text-content-primary font-semibold dark:text-white">Questions generator</p>
                 {isGenerated && (
                   <button className="flex items-center mr-3 text-blue-500 ml-2" onClick={handleBackClick}>
-                    {/* <img src="https://img.icons8.com/?size=100&id=39944&format=png&color=000000" style={{ height: '32px' }}/> */}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#4a6cf7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#4a6cf7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                     Back
                   </button>
                 )}
               </div>
               <div className="flex flex-col mt-6" style={{ height: '400px' }}>
-                {questions ? (
+                {loading ? (
+                  <div className="flex justify-center items-center h-full">
+                    <Hourglass height={50} width={50}  colors={['#306cce', '#72a1ed']} />
+                  </div>
+                ) : questions ? (
                   <div>
                     {questions.map((question, index) => (
-                      <div key={index} className="mb-4 mr-4 before:rounded p-4 border-stroke border bg-[#f8f8f8] focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary">
+                      <div key={index} className="mb-4 mr-4 p-4 border-stroke border bg-[#f8f8f8] focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary">
                         <p className="text-content-primary dark:text-white font-semibold">Question {index + 1}: {question.content}</p>
                         <div className="mt-2">
                           {question.options.map((option, optionIndex) => (
@@ -110,7 +128,10 @@ const GenerateQuestionModal = ({ isOpen, onClose }) => {
                             </div>
                           ))}
                         </div>
-                        <button className="mt-2 px-4 py-2 bg-blue-500 text-white rounded" onClick={() => console.log("Add to exam")}>Add to Exam</button>
+                        <button className="mt-2 px-4 py-2 bg-blue-500 text-white rounded" onClick={() => handleAddToExam(question, index)}>
+                          {addedIndexes.includes(index) ? 'Added' : 'Add to Exam'}
+                        </button>
+
                       </div>
                     ))}
                   </div>
@@ -125,6 +146,8 @@ const GenerateQuestionModal = ({ isOpen, onClose }) => {
                         className="min-h-[40px] max-h-[400px] w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none overflow-auto"
                         placeholder="Enter question context here..."
                         style={{ height: '360px' }}
+                        value={context}
+                        onChange={(e) => setContext(e.target.value)}
                       />
                     </div>
                   </>
@@ -145,7 +168,7 @@ const GenerateQuestionModal = ({ isOpen, onClose }) => {
                   <p className="m-0 text-md text-content-primary font-semibold dark:text-white">Number of options</p>
                   <div className="mt-2 flex gap-2">
                     {[2, 3, 4, 5, 6].map(option => (
-                      <button key={option} className={`w-p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-${selectedOption === option ? 'primary  text-white dark:bg-primary dark:text-white' : '#f8f8f8'} px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none`} onClick={() => setSelectedOption(option)}>{option}</button>
+                      <button key={option} className={`w-p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-${selectedOption === option ? 'primary text-white dark:bg-primary dark:text-white' : '#f8f8f8'} px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none`} onClick={() => setSelectedOption(option)}>{option}</button>
                     ))}
                   </div>
                 </div>
@@ -155,6 +178,8 @@ const GenerateQuestionModal = ({ isOpen, onClose }) => {
                     type="number"
                     className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
                     placeholder="Enter points"
+                    value={points}
+                    onChange={(e) => setPoints(e.target.value)}
                   />
                 </div>
               </div>
@@ -180,4 +205,3 @@ const GenerateQuestionModal = ({ isOpen, onClose }) => {
 };
 
 export default GenerateQuestionModal;
-

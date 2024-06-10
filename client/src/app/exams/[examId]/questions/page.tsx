@@ -13,6 +13,7 @@ const QuestionsPage = () => {
   const { examId } = useParams();
   // const { authToken, userId } = useAuth();
   const authToken = localStorage.getItem('authToken');
+
   const [message, setMessage] = useState("");
   const [exam, setExam] = useState(null);
 
@@ -202,6 +203,11 @@ const QuestionsPage = () => {
     setQuestions([...questions, newQuestion]);
     setCreateQuestionModalOpen(false);
   };
+
+  const updateQuestionList = (newQuestion) => {
+    setQuestions([...questions, newQuestion]);
+  };
+  
 
   return (
     <>
@@ -409,6 +415,9 @@ const QuestionsPage = () => {
                   <GenerateQuestionModal
                     isOpen={isGenerateQuestionModalOpen}
                     onClose={closeGenerateQuestionModal}
+                    language={exam.language}
+                    examId = {examId}
+                    updateQuestionList={updateQuestionList}
                   />
                 </div>
               )}
