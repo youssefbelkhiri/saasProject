@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -7,7 +8,7 @@ import { UpdateStudentDto } from './dto/update-student.dto';
 export class StudentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getStudents(user_id: number){
+  async getStudents(user_id: number) {
     return this.prisma.students.findMany({
       where: {
         groups: {
@@ -16,10 +17,13 @@ export class StudentsService {
           },
         },
       },
+      include: {
+        groups: true,
+      },
     });
   }
 
-  async getStudent(id: number, user_id: number){
+  async getStudent(id: number, user_id: number) {
     const student = await this.prisma.students.findUnique({
       where: { student_id: +id },
       include: {
@@ -32,27 +36,27 @@ export class StudentsService {
     });
 
     if (!student) {
-      throw new NotFoundException(`Can't find this student : ${id}`)
+      throw new NotFoundException(`Can't find this student : ${id}`);
     }
 
     if (!student.groups.some((group) => group.user_id === user_id)) {
       throw new HttpException('Unauthorized', 401);
     }
-  
+
     return student;
   }
 
-  async createStudent(studentDto:  CreateStudentDto, userId: number){
+  async createStudent(studentDto: CreateStudentDto, userId: number) {
     const { user_id, groups, ...restDto } = studentDto;
 
-    if(user_id != userId){
+    if (user_id != userId) {
       throw new HttpException('Unauthorized', 401);
     }
 
     if (groups && Array.isArray(groups)) {
-      const group_ids = groups.map(group_id => ({ group_id: group_id }));
-  
-      const studentGroup =  await this.prisma.students.create({
+      const group_ids = groups.map((group_id) => ({ group_id: group_id }));
+
+      const studentGroup = await this.prisma.students.create({
         data: {
           ...restDto,
           groups: { connect: group_ids },
@@ -63,49 +67,49 @@ export class StudentsService {
         group_ids.map(async (id) => {
           await this.prisma.student_group.create({
             data: {
-              group_id: +id.group_id, 
+              group_id: +id.group_id,
               student_id: +studentGroup.student_id,
             },
           });
-        })
+        }),
       );
       return studentGroup;
-
-
-    } 
-    else {
-      return await this.prisma.students.create({ data: { ...restDto } }); 
+    } else {
+      return await this.prisma.students.create({ data: { ...restDto } });
     }
   }
 
-  async updateStudent(id: number, studentDto: UpdateStudentDto, userId: number){
+  async updateStudent(
+    id: number,
+    studentDto: UpdateStudentDto,
+    userId: number,
+  ) {
     const { user_id, groups, ...restDto } = studentDto;
 
     const existingStudent = await this.prisma.students.findUnique({
       where: { student_id: +id },
-      include: { groups: true }, 
+      include: { groups: true },
     });
-  
+
     if (!existingStudent) {
       throw new NotFoundException(`Can't find this student: ${id}`);
     }
-  
+
     if (!existingStudent.groups.some((group) => group.user_id === userId)) {
       throw new HttpException('Unauthorized', 401);
     }
 
     if (groups && Array.isArray(groups)) {
-      const group_ids = groups.map(group_id => ({ group_id: group_id }));
+      const group_ids = groups.map((group_id) => ({ group_id: group_id }));
 
       return await this.prisma.students.update({
         where: { student_id: +id },
         data: {
           ...restDto,
-          groups: { set: group_ids }, 
+          groups: { set: group_ids },
         },
       });
-    }
-    else {
+    } else {
       return await this.prisma.students.update({
         where: { student_id: +id },
         data: { ...restDto },
@@ -113,7 +117,7 @@ export class StudentsService {
     }
   }
 
-  async deleteStudent(id: number, user_id: number){
+  async deleteStudent(id: number, user_id: number) {
     const student = await this.prisma.students.findUnique({
       where: { student_id: +id },
       include: {
@@ -126,14 +130,13 @@ export class StudentsService {
     });
 
     if (!student) {
-      throw new NotFoundException(`Can't find this student : ${id}`)
+      throw new NotFoundException(`Can't find this student : ${id}`);
     }
 
     if (!student.groups.some((group) => group.user_id === user_id)) {
       throw new HttpException('Unauthorized', 401);
     }
 
-    return await this.prisma.students.delete({where: {student_id: +id}})
+    return await this.prisma.students.delete({ where: { student_id: +id } });
   }
-
 }

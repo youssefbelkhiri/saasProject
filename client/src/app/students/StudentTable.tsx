@@ -1,6 +1,14 @@
 const StudentTable = ({ students, onDeleteStudent, onEditStudent }) => {
+  // const groups = students.groups.map((group) => group.group_id);
+
+  const getGroupIds = (student) => {
+    return student.groups.map((group) => group.name).join(", ");
+  };
+
+  console.log(students.type);
+  console.log(students);
   return (
-    <table className="w-full mt-4">
+    <table className="mt-4 w-full">
       <thead>
         <tr>
           <th className="border px-4 py-2">Student Number</th>
@@ -13,15 +21,23 @@ const StudentTable = ({ students, onDeleteStudent, onEditStudent }) => {
       <tbody>
         {students.map((student) => (
           <tr key={student.id}>
-            <td className="border px-4 py-2">{student.studentNumber}</td>
-            <td className="border px-4 py-2">{student.firstName}</td>
-            <td className="border px-4 py-2">{student.lastName}</td>
+            <td className="border px-4 py-2">{student.student_number}</td>
+            <td className="border px-4 py-2">{student.first_name}</td>
+            <td className="border px-4 py-2">{student.last_name}</td>
+            <td className="border px-4 py-2">{getGroupIds(student)}</td>
             <td className="border px-4 py-2">
-              {student.groups.length > 0 ? student.groups.join(', ') : 'No Groups'}
-            </td>
-            <td className="border px-4 py-2">
-              <button onClick={() => onDeleteStudent(student.id)} className="text-red-500 mr-2">Delete</button>
-              <button onClick={() => onEditStudent(student)} className="text-blue-500">Edit</button>
+              <button
+                onClick={() => onDeleteStudent(student.student_id)}
+                className="mr-2 text-red-500"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => onEditStudent(student)}
+                className="text-blue-500"
+              >
+                Edit
+              </button>
             </td>
           </tr>
         ))}

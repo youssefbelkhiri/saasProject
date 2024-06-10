@@ -18,11 +18,14 @@ const ProfilePage = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    if (!authToken) {
-      router.push("/signin");
-    } else {
-      fetchProfileData();
-    }
+    const checkAuthAndFetchProfile = async () => {
+      if (!authToken) {
+        router.push("/signin");
+      } else {
+        await fetchProfileData();
+      }
+    };
+    checkAuthAndFetchProfile();
   }, [authToken]);
 
   const fetchProfileData = async () => {
@@ -33,7 +36,7 @@ const ProfilePage = () => {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
-        }
+        },
       );
       const userId = profileResponse.data.id;
 
@@ -43,7 +46,7 @@ const ProfilePage = () => {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
-        }
+        },
       );
 
       const userData = {
@@ -85,7 +88,7 @@ const ProfilePage = () => {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
-        }
+        },
       );
       console.log(response.data);
       setSuccessMessage("Your information has been updated successfully.");
@@ -108,7 +111,10 @@ const ProfilePage = () => {
                 </p>
 
                 {successMessage && (
-                  <div className="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+                  <div
+                    className="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-gray-800 dark:text-green-400"
+                    role="alert"
+                  >
                     <span className="font-medium">{successMessage}</span>
                   </div>
                 )}
@@ -200,8 +206,7 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-        <div className="z-[-1 absolute left-0 top-0">
-        </div>
+        <div className="z-[-1 absolute left-0 top-0"></div>
       </section>
     </>
   );
