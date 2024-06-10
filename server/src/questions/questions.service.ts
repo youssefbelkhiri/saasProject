@@ -117,13 +117,19 @@ export class QuestionsService {
     if (!question) {
       throw new NotFoundException(`Can't find this question id : ${id}`);
     }
-
+  
     if (question.examR.user_id !== user_id) {
       throw new HttpException('Unauthorized', 401);
     }
-
+  
+    // Delete all existing options for the question
+    await this.prisma.options.deleteMany({
+      where: { questionId: +id },
+    });
+  
+    // Update the question data
     const updatedQuestion = await this.prisma.questions.update({
-      where: {  question_id: +id },
+      where: { question_id: +id },
       data: {
         questionOrder: questionData.questionOrder,
         content: questionData.content,
@@ -133,20 +139,24 @@ export class QuestionsService {
       include: { options: true },
     });
   
-  
+    // Create new options for the question
     if (questionData.options) {
-      const updateOptionPromises = questionData.options.map(async (optionData) => {
-        return this.updateOption(optionData.option_id, {
-          optionOrder: optionData.optionOrder,
-          option: optionData.option,
-          correct: optionData.correct,
-        },user_id);
+      const createOptionPromises = questionData.options.map(async (optionData) => {
+        return this.prisma.options.create({
+          data: {
+            optionOrder: optionData.optionOrder,
+            option: optionData.option,
+            correct: optionData.correct,
+            questionId: +id,
+          },
+        });
       });
-      await Promise.all(updateOptionPromises);
+      await Promise.all(createOptionPromises);
     }
   
     return updatedQuestion;
   }
+  
   
   
   async deleteOption(id: number, user_id: number): Promise<Options> {

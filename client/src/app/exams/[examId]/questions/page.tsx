@@ -11,7 +11,8 @@ import ErrorPage from '@/app/error/page';
 
 const QuestionsPage = () => {
   const { examId } = useParams();
-  const { authToken, userId } = useAuth();
+  // const { authToken, userId } = useAuth();
+  const authToken = localStorage.getItem('authToken');
   const [message, setMessage] = useState("");
   const [exam, setExam] = useState(null);
 
@@ -91,11 +92,12 @@ const QuestionsPage = () => {
     }
   };
   
+  
 
   const handleAddOption = () => {
     setSelectedQuestion({
       ...selectedQuestion,
-      options: [...selectedQuestion.options, ""]
+      options: [...selectedQuestion.options, { option: '', correct: false }]
     });
   };
 
@@ -111,40 +113,42 @@ const QuestionsPage = () => {
     e.preventDefault();
 
     const updatedOptions = selectedQuestion.options.map((option, index) => ({
-      ...option,
-      option_id: option.option_id || `new-${index}`, // Temporary ID for new options
+      option_id: option.option_id || undefined,
       optionOrder: index + 1,
-      questionId: selectedQuestion.question_id,
+      option: option.option,
       correct: index === selectedQuestion.correctOption,
+      questionId: parseInt(selectedQuestion.question_id, 10),
     }));
 
     const updatedQuestionDTO = {
-      question_id: selectedQuestion.question_id,
+      question_id: parseInt(selectedQuestion.question_id, 10),
       content: selectedQuestion.content,
       difficulty: selectedQuestion.difficulty,
-      points: selectedQuestion.points,
+      points: parseInt(selectedQuestion.points, 10),
       exam_id: selectedQuestion.exam_id,
-      correctOption: selectedQuestion.correctOption,
       options: updatedOptions,
     };
 
     console.log(updatedQuestionDTO);
+
     try {
       const response = await axios.patch(`http://localhost:3000/api/questions/${selectedQuestion.question_id}`, updatedQuestionDTO, {
         headers: {
-          Authorization: `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
+
       console.log("Updated Question:", response.data);
       setMessage("Question updated successfully!");
 
-      const updatedQuestions = questions.map(q => q.question_id === selectedQuestion.question_id ? selectedQuestion : q);
+      const updatedQuestions = questions.map(q => q.question_id === selectedQuestion.question_id ? response.data : q);
       setQuestions(updatedQuestions);
     } catch (error) {
       setMessage("Error updating question");
       console.error("Error updating question:", error);
     }
   };
+  ;
 
   const handleDeleteQuestion = async () => {
     try {
@@ -255,7 +259,7 @@ const QuestionsPage = () => {
                       Points
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       id="questionPoints"
                       name="points"
                       value={selectedQuestion.points}
@@ -284,6 +288,14 @@ const QuestionsPage = () => {
                     <ul className="mb-4">
                       {selectedQuestion.options.map((option, index) => (
                         <li key={index} className="mb-2 flex items-center">
+                          <input
+                              type="hidden"
+                              id={`option${index}`}
+                              name="option_id"
+                              value={index}
+                              onChange={(e) => handleInputChange(e, index)}
+                              className="mr-2 w-4 h-4"
+                            />
                             <input
                               type="radio"
                               id={`option${index}`}
