@@ -1,21 +1,64 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
 import Link from 'next/link';
 import CreateQuestionModal from './CreateQuestionModal';
 import GenerateQuestionModal from './GenerateQuestionModal';
+import axios from 'axios';
+import { useAuth } from "../../../authMiddleware";
+import ErrorPage from '@/app/error/page';
 
-
-const ExamPage = () => {
+const QuestionsPage = () => {
   const { examId } = useParams();
+  const { authToken, userId } = useAuth();
+  const [message, setMessage] = useState("");
+  const [exam, setExam] = useState(null);
+
+
   const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [questions, setQuestions] = useState([
-    { id: 1, name: "Question 1", difficulty: "easy", points: 10, options: ["Option 1", "Option 2", "Option 3"], correctOption: 0 },
-    { id: 2, name: "Question 2", difficulty: "medium", points: 15, options: ["Option 1", "Option 2", "Option 3"], correctOption: 1 },
-    { id: 3, name: "Question 3", difficulty: "hard", points: 20, options: ["Option 1", "Option 2", "Option 3"], correctOption: 2 },
-  ]);
   const [isCreating, setIsCreating] = useState(false);
+
+  const [isCreateQuestionModalOpen, setCreateQuestionModalOpen] = useState(false);
+  const [isGenerateQuestionModalOpen, setGenerateQuestionModalOpen] = useState(false);
+
+  const [questions, setQuestions] = useState([]);
+
+  useEffect(() => {
+    const fetchExamAndQuestions = async () => {
+      try {
+        const examResponse = await axios.get(`http://localhost:3000/api/exams/${examId}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+        const examData = examResponse.data;
+        console.log("Exam Data:", examData);
+
+        const updatedQuestions = await Promise.all(
+          examData.questions.map(async (question) => {
+            const questionResponse = await axios.get(`http://localhost:3000/api/questions/${question.question_id}`, {
+              headers: {
+                Authorization: `Bearer ${authToken}`
+              }
+            });
+            return questionResponse.data;
+          })
+        );
+        console.log("Updated Questions:", updatedQuestions);
+        setQuestions(updatedQuestions);
+        setExam(examData);
+      } catch (error) {
+        console.error("Error fetching exam and questions:", error);
+      }
+    };
+    fetchExamAndQuestions();
+  }, [examId, authToken]);
+
+
+  if (!exam) {
+    return <ErrorPage />;
+  }
 
   const handleQuestionClick = (question) => {
     setSelectedQuestion(question);
@@ -27,28 +70,27 @@ const ExamPage = () => {
     setIsCreating(true);
   };
 
-
   const handleInputChange = (e, index) => {
     const { name, value, type } = e.target;
-    if (name.startsWith("option")) {
-      const updatedOptions = [...selectedQuestion.options];
-      updatedOptions[index] = value;
-      setSelectedQuestion({
-        ...selectedQuestion,
-        options: updatedOptions
+    if (type === "radio" && name === "correctOption") {
+      const updatedOptions = selectedQuestion.options.map((option, i) => ({
+        ...option,
+        correct: i === parseInt(value),
+      }));
+      setSelectedQuestion({ ...selectedQuestion, options: updatedOptions, correctOption: parseInt(value) });
+    } else if (name.startsWith("option")) {
+      const updatedOptions = selectedQuestion.options.map((option, i) => {
+        if (i === index) {
+          return { ...option, option: value };
+        }
+        return option;
       });
-    } else if (type === "radio") {
-      setSelectedQuestion({
-        ...selectedQuestion,
-        [name]: parseInt(value)
-      });
+      setSelectedQuestion({ ...selectedQuestion, options: updatedOptions });
     } else {
-      setSelectedQuestion({
-        ...selectedQuestion,
-        [name]: value
-      });
+      setSelectedQuestion({ ...selectedQuestion, [name]: value });
     }
   };
+  
 
   const handleAddOption = () => {
     setSelectedQuestion({
@@ -58,24 +100,66 @@ const ExamPage = () => {
   };
 
   const handleDeleteOption = (index) => {
-    const updatedOptions = [...selectedQuestion.options];
-    updatedOptions.splice(index, 1);
+    const updatedOptions = selectedQuestion.options.filter((option, i) => i !== index);
     setSelectedQuestion({
       ...selectedQuestion,
       options: updatedOptions
     });
   };
 
-  const handleUpdateQuestion = (e) => {
+  const handleUpdateQuestion = async (e) => {
     e.preventDefault();
-    console.log("Updated Question:", selectedQuestion);
-    const updatedQuestions = questions.map(q => q.id === selectedQuestion.id ? selectedQuestion : q);
-    setQuestions(updatedQuestions);
+
+    const updatedOptions = selectedQuestion.options.map((option, index) => ({
+      ...option,
+      option_id: option.option_id || `new-${index}`, // Temporary ID for new options
+      optionOrder: index + 1,
+      questionId: selectedQuestion.question_id,
+      correct: index === selectedQuestion.correctOption,
+    }));
+
+    const updatedQuestionDTO = {
+      question_id: selectedQuestion.question_id,
+      content: selectedQuestion.content,
+      difficulty: selectedQuestion.difficulty,
+      points: selectedQuestion.points,
+      exam_id: selectedQuestion.exam_id,
+      correctOption: selectedQuestion.correctOption,
+      options: updatedOptions,
+    };
+
+    console.log(updatedQuestionDTO);
+    try {
+      const response = await axios.patch(`http://localhost:3000/api/questions/${selectedQuestion.question_id}`, updatedQuestionDTO, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      console.log("Updated Question:", response.data);
+      setMessage("Question updated successfully!");
+
+      const updatedQuestions = questions.map(q => q.question_id === selectedQuestion.question_id ? selectedQuestion : q);
+      setQuestions(updatedQuestions);
+    } catch (error) {
+      setMessage("Error updating question");
+      console.error("Error updating question:", error);
+    }
   };
 
-  const [isCreateQuestionModalOpen, setCreateQuestionModalOpen] = useState(false);
-  const [isGenerateQuestionModalOpen, setGenerateQuestionModalOpen] = useState(false);
-
+  const handleDeleteQuestion = async () => {
+    try {
+      await axios.delete(`http://localhost:3000/api/questions/${selectedQuestion.question_id}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      const updatedQuestions = questions.filter(q => q.question_id !== selectedQuestion.question_id);
+      setQuestions(updatedQuestions);
+      setSelectedQuestion(null);
+    } catch (error) {
+      console.error("Error deleting question:", error);
+    }
+  };
 
   const openCreateQuestionModal = () => {
     setCreateQuestionModalOpen(true);
@@ -94,12 +178,9 @@ const ExamPage = () => {
   };
 
   const handleCreateQuestion = (questionData) => {
-    // Implement logic to handle creating a new question
     console.log("New question data:", questionData);
-    // Close the modal after creating the question
     closeCreateQuestionModal();
   };
-
 
 
   return (
@@ -129,11 +210,11 @@ const ExamPage = () => {
             <div className="w-full md:w-1/4 border-r p-4">
               {questions.map((question) => (
                 <button
-                  key={question.id}
+                  key={question.question_id}
                   onClick={() => handleQuestionClick(question)}
-                  className={`w-full p-2 border ${selectedQuestion && selectedQuestion.id === question.id ? 'bg-primary text-white dark:text-white' : 'hover:bg-primary text-blue-700 hover:text-white'} border-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 text-center mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800`}
+                  className={`w-full p-2 border ${selectedQuestion && selectedQuestion.question_id === question.question_id ? 'bg-primary text-white dark:text-white' : 'hover:bg-primary text-blue-700 hover:text-white'} border-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg px-5 py-2.5 text-center mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800`}
                 >
-                  {question.name}
+                  {question.content}
                 </button>
               ))}
               <button
@@ -144,8 +225,18 @@ const ExamPage = () => {
               </button>
             </div>
             <div className="w-full md:w-3/4 p-4">
-            {selectedQuestion && (
+              {selectedQuestion && (
                 <form onSubmit={handleUpdateQuestion}>
+
+              {message && (
+                  <div
+                    className="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-gray-800 dark:text-green-400"
+                    role="alert"
+                  >
+                    <span className="font-medium">{message}</span>
+                  </div>
+                )}
+
                   <div className="mb-4">
                     <label className="block text-sm font-bold mb-2" htmlFor="questionName">
                       Question Name
@@ -153,8 +244,21 @@ const ExamPage = () => {
                     <input
                       type="text"
                       id="questionName"
-                      name="name"
-                      value={selectedQuestion.name}
+                      name="content"
+                      value={selectedQuestion.content}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold mb-2" htmlFor="questionPoints">
+                      Points
+                    </label>
+                    <input
+                      type="text"
+                      id="questionPoints"
+                      name="points"
+                      value={selectedQuestion.points}
                       onChange={(e) => handleInputChange(e)}
                       className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
                     />
@@ -180,23 +284,22 @@ const ExamPage = () => {
                     <ul className="mb-4">
                       {selectedQuestion.options.map((option, index) => (
                         <li key={index} className="mb-2 flex items-center">
-                          <input
-                            type="radio"
-                            id={`option${index}`}
-                            name="correctOption"
-                            value={index}
-                            checked={selectedQuestion.correctOption === index}
-                            onChange={(e) => handleInputChange(e, index)}
-                            className="mr-2 w-4 h-4"
-                          />
+                            <input
+                              type="radio"
+                              id={`option${index}`}
+                              name="correctOption"
+                              value={index}
+                              checked={option.correct}
+                              onChange={(e) => handleInputChange(e, index)}
+                              className="mr-2 w-4 h-4"
+                            />
                           <input
                             type="text"
                             id={`optionText${index}`}
                             name={`option${index}`}
-                            value={option}
+                            value={option.option}
                             onChange={(e) => handleInputChange(e, index)}
                             className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-
                           />
                           <button
                             type="button"
@@ -221,6 +324,13 @@ const ExamPage = () => {
                     className="mt-4 w-full p-2 border rounded bg-primary text-white"
                   >
                     Update
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-4 w-full p-2 border rounded bg-red-500 text-white"
+                    onClick={handleDeleteQuestion}
+                  >
+                    Delete
                   </button>
                 </form>
               )}
@@ -255,6 +365,7 @@ const ExamPage = () => {
               )}
             </div>
           </div>
+
         </div>
 
       </section>
@@ -262,4 +373,4 @@ const ExamPage = () => {
   );
 };
 
-export default ExamPage;
+export default QuestionsPage;

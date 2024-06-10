@@ -1,104 +1,126 @@
-import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import CreateQuestionModal from './CreateQuestionModal';
+import GenerateQuestionModal from './GenerateQuestionModal';
+import axios from 'axios';
+import { useAuth } from "../../../authMiddleware";
+import ErrorPage from '@/app/error/page';
 
-const EditStudentModal = ({ isOpen, onClose, student, groups = [], onUpdateStudent }) => {
-  const [updatedStudent, setUpdatedStudent] = useState({ ...student });
-  const [groupOptions, setGroupOptions] = useState([]);
+const QuestionsPage = () => {
+  const router = useRouter();
+  const { examId } = router.query;
+  const { authToken, userId } = useAuth();
+  const [exam, setExam] = useState(null);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isCreateQuestionModalOpen, setCreateQuestionModalOpen] = useState(false);
+  const [isGenerateQuestionModalOpen, setGenerateQuestionModalOpen] = useState(false);
+  const [questions, setQuestions] = useState([]);
 
   useEffect(() => {
-    if (isOpen) {
-      // Fetch groups data here or update group options based on some other source
-      setGroupOptions(groups.map(group => ({ value: group, label: group })));
-    }
-  }, [isOpen, groups]);
+    const fetchExamAndQuestions = async () => {
+      try {
+        const examResponse = await axios.get(`http://localhost:3000/api/exams/${examId}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+        const examData = examResponse.data;
 
-  const handleGroupChange = (selectedOptions) => {
-    const selectedGroups = selectedOptions ? selectedOptions.map(option => option.value) : [];
-    setUpdatedStudent({ ...updatedStudent, groups: selectedGroups });
+        const updatedQuestions = await Promise.all(
+          examData.questions.map(async (question) => {
+            const questionResponse = await axios.get(`http://localhost:3000/api/questions/${question.question_id}`, {
+              headers: {
+                Authorization: `Bearer ${authToken}`
+              }
+            });
+            return questionResponse.data;
+          })
+        );
+
+        setQuestions(updatedQuestions);
+        setExam(examData);
+      } catch (error) {
+        console.error("Error fetching exam and questions:", error);
+      }
+    };
+    fetchExamAndQuestions();
+  }, [examId, authToken]);
+
+  if (!exam) {
+    return <ErrorPage />;
+  }
+
+  const handleQuestionClick = (question) => {
+    setSelectedQuestion(question);
+    setIsCreating(false);
   };
 
-  return (
-    isOpen && (
-      <div className="fixed z-10 inset-0 overflow-y-auto">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="fixed inset-0 bg-gray-500 opacity-75"></div>
-          <div className="relative bg-white w-full max-w-md p-6 rounded-lg shadow-xl">
-            <button className="absolute top-0 right-0 mt-4 mr-4 text-gray-500 hover:text-gray-700" onClick={onClose}>
-              <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+  const handleCreateQuestionClick = () => {
+    setSelectedQuestion(null);
+    setIsCreating(true);
+  };
 
-            <h2 className="text-lg font-semibold mb-4">Edit Student</h2>
+  const handleInputChange = (e, index) => {
+    const { name, value, type } = e.target;
+    if (name.startsWith("option")) {
+      const updatedOptions = selectedQuestion.options.map((option, i) => {
+        if (i === index) {
+          return { ...option, option: value };
+        }
+        return option;
+      });
+      setSelectedQuestion({ ...selectedQuestion, options: updatedOptions });
+    } else if (type === "radio") {
+      setSelectedQuestion({ ...selectedQuestion, correctOption: parseInt(value) });
+    } else {
+      setSelectedQuestion({ ...selectedQuestion, [name]: value });
+    }
+  };
 
-            <form onSubmit={(e) => { e.preventDefault(); onUpdateStudent(updatedStudent); }}>
-            <div className="mb-4">
-                <label className="block text-sm font-bold mb-2" htmlFor="student_number">
-                  Student Number
-                </label>
-                <input
-                  type="text"
-                  id="student_number"
-                  name="student_number"
-                  value={newStudent.studentNumber}
-                  onChange={(e) => setNewStudent({ ...newStudent, studentNumber: e.target.value })}
-                  className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                />
-              </div>
+  const handleAddOption = () => {
+    setSelectedQuestion({
+      ...selectedQuestion,
+      options: [...selectedQuestion.options, ""]
+    });
+  };
 
-              <div className="mb-4">
-                <label className="block text-sm font-bold mb-2" htmlFor="first_name">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  id="first_name"
-                  name="first_name"
-                  value={newStudent.firstName}
-                  onChange={(e) => setNewStudent({ ...newStudent, firstName: e.target.value })}
-                  className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                />
-              </div>
+  const handleDeleteOption = (index) => {
+    const updatedOptions = selectedQuestion.options.filter((option, i) => i !== index);
+    setSelectedQuestion({
+      ...selectedQuestion,
+      options: updatedOptions
+    });
+  };
 
-              <div className="mb-4">
-                <label className="block text-sm font-bold mb-2" htmlFor="last_name">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  id="last_name"
-                  name="last_name"
-                  value={newStudent.lastName}
-                  onChange={(e) => setNewStudent({ ...newStudent, lastName: e.target.value })}
-                  className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                />
-              </div>
+  const handleUpdateQuestion = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.patch(`http://localhost:3000/api/questions/${selectedQuestion.question_id}`, selectedQuestion, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      console.log("Updated Question:", response.data);
+      const updatedQuestions = questions.map(q => q.question_id === selectedQuestion.question_id ? selectedQuestion : q);
+      setQuestions(updatedQuestions);
+    } catch (error) {
+      console.error("Error updating question:", error);
+    }
+  };
 
-
-              <div className="mb-4">
-                <label className="block text-sm font-bold mb-2" htmlFor="groups">
-                  Groups
-                </label>
-                <Select
-                  isMulti
-                  name="groups"
-                  value={groupOptions.filter(option => updatedStudent.groups.includes(option.value))}
-                  options={groupOptions}
-                  className="basic-multi-select"
-                  classNamePrefix="select"
-                  onChange={handleGroupChange}
-                />
-              </div>
-
-              <button type="submit" className="w-full p-2 border rounded bg-primary text-white">
-                Update Student
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    )
-  );
-};
-
-export default EditStudentModal;
+  const handleDeleteQuestion = async () => {
+    try {
+      await axios.delete(`http://localhost:3000/api/questions/${selectedQuestion.question_id}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      const updatedQuestions = questions.filter(q => q.question_id !== selectedQuestion.question_id);
+      setQuestions(updatedQuestions);
+      setSelectedQuestion(null);
+    } catch (error) {
+      console.error("Error deleting question:", error);
+    }
+  };
