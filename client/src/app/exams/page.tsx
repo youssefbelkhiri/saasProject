@@ -5,16 +5,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
+import { useAuth } from "../../app/authMiddleware";
 import { metadata } from "./examsMetadata";
+import { Console } from "console";
 
-// interface Exam {
-//   id: number;
-//   name: string;
-//   exam_language: string;
-//   description: string;
-//   exam_time: number;
-//   total_point: number;
-// }
 
 const ExamsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,6 +20,8 @@ const ExamsPage = () => {
   const [examDescription, setExamDescription] = useState("");
   const [message, setMessage] = useState("");
   const [exams, setExams] = useState([]);
+  const { authToken, userId } = useAuth();
+
 
   useEffect(() => {
     fetchExams();
@@ -55,10 +51,10 @@ const ExamsPage = () => {
     const newExam = {
       name: newExamName,
       exam_language: examLanguage,
-      description: examDescription,
+      description: "",
       exam_time: examTime,
       total_point: totalPoint,
-      user_id: 11,
+      user_id: userId,
     };
 
     try {
@@ -74,14 +70,14 @@ const ExamsPage = () => {
         },
       );
 
-      console.log("Exam created successfully:", response.data);
+      // console.log("Exam created successfully:", response.data);
       setMessage("Exam created successfully!");
       setIsModalOpen(false);
-      setNewExamName("");
-      setExamLanguage("english");
-      setExamDescription("");
-      setExamTime(0);
-      setTotalPoint(0);
+      // setNewExamName("");
+      // setExamLanguage("english");
+      // setExamDescription("");
+      // setExamTime(0);
+      // setTotalPoint(0);
       setExams([...exams, response.data]);
     } catch (error) {
       console.error("Error creating exam:", error);
@@ -116,10 +112,10 @@ const ExamsPage = () => {
           <ul className="list-none">
             {filteredExams.map((exam) => (
               <li
-                key={exam.id}
+                key={exam.exam_id}
                 className="hover:bg-background-neutral-subtle mb-2"
               >
-                <Link href={`/exams/${exam.id}/overview`}>
+                <Link href={`/exams/${exam.exam_id}/overview`}>
                   <div
                     className="border-border-divider -sm:border-b -sm:px-4 flex cursor-pointer flex-col gap-2 px-2 py-4 !opacity-100 md:flex-row md:items-center md:justify-between md:rounded-lg"
                     role="button"
@@ -153,6 +149,14 @@ const ExamsPage = () => {
               <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-gray-100">
                 Create New Exam
               </h2>
+              {message && (
+                <div
+                  className="relative mt-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-200"
+                  role="alert"
+                >
+                  <span className="block sm:inline">{message}</span>
+                </div>
+              )}
               <label
                 htmlFor="examName"
                 className="mb-2 block text-gray-700 dark:text-gray-300"
@@ -179,7 +183,7 @@ const ExamsPage = () => {
                 <option value="english">English</option>
                 <option value="french">French</option>
               </select>
-              <label
+              {/* <label
                 htmlFor="examDescription"
                 className="mb-2 block text-gray-700 dark:text-gray-300"
               >
@@ -188,7 +192,7 @@ const ExamsPage = () => {
               <textarea
                 id="examDescription"
                 className="mb-4 w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base outline-none transition-all duration-300 focus:border-primary dark:bg-gray-700 dark:text-gray-200 dark:focus:border-primary"
-              ></textarea>
+              ></textarea> */}
               <label
                 htmlFor="examTime"
                 className="mb-2 block text-gray-700 dark:text-gray-300"
@@ -229,14 +233,6 @@ const ExamsPage = () => {
                   Create
                 </button>
               </div>
-              {message && (
-                <div
-                  className="relative mt-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-200"
-                  role="alert"
-                >
-                  <span className="block sm:inline">{message}</span>
-                </div>
-              )}
             </div>
           </div>
         )}

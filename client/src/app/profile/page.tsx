@@ -20,7 +20,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const checkAuthAndFetchProfile = async () => {
       if (!authToken) {
-        router.push("/signin");
+        // router.push("/signin");
       } else {
         await fetchProfileData();
       }

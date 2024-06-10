@@ -1,48 +1,48 @@
 "use client";
 
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ErrorPage from '@/app/error/page';
-
-const fetchExamData = async (examId) => {
-  const exams = [
-    { id: 1, name: "Math Exam", language: "English", description: "A comprehensive math exam.", totalPoints: 100, time: 60 },
-    { id: 2, name: "Science Exam", language: "English", description: "A comprehensive science exam.", totalPoints: 100, time: 60 },
-    { id: 3, name: "History Exam", language: "French", description: "A comprehensive history exam.", totalPoints: 100, time: 60 },
-    { id: 4, name: "Geography Exam", language: "French", description: "A comprehensive geography exam.", totalPoints: 100, time: 60 },
-  ];
-
-  return exams.find(exam => exam.id === parseInt(examId));
-};
+import axios from 'axios';
+import { useAuth } from "../../../authMiddleware";
 
 const OverviewPage = () => {
+  const { authToken, userId } = useAuth();
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
+  const [message, setMessage] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
-    language: "English",
+    exam_language: "English",
     description: "",
-    totalPoints: "",
-    time: ""
+    total_point: "",
+    exam_time: ""
   });
 
   useEffect(() => {
     if (examId) {
-      fetchExamData(examId).then(data => {
-        setExam(data);
-        if (data) {
-          setFormData({
-            name: data.name,
-            language: data.language,
-            description: data.description,
-            totalPoints: data.totalPoints,
-            time: data.time
-          });
+      axios.get(`http://localhost:3000/api/exams/${examId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
         }
+      })
+      .then(response => {
+        setExam(response.data);
+        setFormData({
+          name: response.data.name,
+          exam_language: response.data.exam_language,
+          description: response.data.description,
+          total_point: response.data.total_point,
+          exam_time: response.data.exam_time,
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching exam data:', error);
       });
     }
-  }, [examId]);
+  }, [examId, authToken]);
 
   if (!exam) {
     return <ErrorPage />;
@@ -55,8 +55,30 @@ const OverviewPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Submitted", formData);
-    // Handle form submission to update exam details
+
+    const updatedFormData = {
+      name: formData.name,
+      exam_language: formData.exam_language,
+      description: formData.description,
+      exam_time: parseInt(formData.exam_time),
+      total_point: parseInt(formData.total_point),
+      user_id: userId
+    };
+
+
+    console.log(updatedFormData);
+    try {
+      await axios.patch(`http://localhost:3000/api/exams/${examId}`, updatedFormData, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      setMessage("Exam updated successfully!");
+    } 
+    catch (error) {
+      console.error('Error updating exam:', error);
+      setMessage('Error updating exam');
+    }
   };
 
   const currentPath = typeof window !== "undefined" ? window.location.hash : '';
@@ -88,6 +110,14 @@ const OverviewPage = () => {
           <div className="container mx-auto p-4 flex flex-col md:flex-row">
             <div className="w-full md:w-1/2 pr-4 mb-8 md:mb-0">
               <form onSubmit={handleSubmit}>
+                {message && (
+                  <div
+                    className="mb-4 relative mt-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-200"
+                    role="alert"
+                  >
+                    <span className="block sm:inline">{message}</span>
+                  </div>
+                )}
                 <div className="mb-4">
                   <label className="block text-sm font-bold mb-2" htmlFor="name">
                     Exam Name
@@ -104,13 +134,13 @@ const OverviewPage = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2" htmlFor="language">
+                  <label className="block text-sm font-bold mb-2" htmlFor="exam_language">
                     Language
                   </label>
                   <select
-                    id="language"
-                    name="language"
-                    value={formData.language}
+                    id="exam_language"
+                    name="exam_language"
+                    value={formData.exam_language}
                     onChange={handleChange}
                     className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
                     required
@@ -133,28 +163,28 @@ const OverviewPage = () => {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2" htmlFor="totalPoints">
+                  <label className="block text-sm font-bold mb-2" htmlFor="total_point">
                     Total Points
                   </label>
                   <input
                     type="number"
-                    id="totalPoints"
-                    name="totalPoints"
-                    value={formData.totalPoints}
+                    id="total_point"
+                    name="total_point"
+                    value={formData.total_point}
                     onChange={handleChange}
                     className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
                     required
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2" htmlFor="time">
+                  <label className="block text-sm font-bold mb-2" htmlFor="exam_time">
                     Exam Time (minutes)
                   </label>
                   <input
                     type="number"
-                    id="time"
-                    name="time"
-                    value={formData.time}
+                    id="exam_time"
+                    name="exam_time"
+                    value={formData.exam_time}
                     onChange={handleChange}
                     className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
                     required
@@ -180,8 +210,8 @@ const OverviewPage = () => {
                     </svg>
                     <p className="text-lg font-bold">Questions</p>
                   </div>
-                  <span className="text-lg">13 questions</span>
-                </div>
+                  <span className="text-lg">{exam ? `${exam.questions.length} questions` : '0'}</span>
+                  </div>
                 <div className="flex items-center gap-2">
                   <div className='text-content-secondary flex items-center gap-1.5 p-1.5'>
                     <svg className="text-md" stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="1.8em" width="1.8em" xmlns="http://www.w3.org/2000/svg">
@@ -192,7 +222,7 @@ const OverviewPage = () => {
                     </svg>
                     <p className="text-lg font-bold">Graded</p>
                   </div>
-                  <span className="text-lg">6 out of 13</span>
+                  <span className="text-lg">0 out of 20</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className='text-content-secondary flex items-center gap-1.5 p-1.5'>
@@ -202,7 +232,7 @@ const OverviewPage = () => {
                     </svg>
                     <p className="text-lg font-bold">Points</p>
                   </div>
-                  <span className="text-lg">80 out of 100</span>
+                  <span className="text-lg">{exam ? exam.total_point : '0'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className='text-content-secondary flex items-center gap-1.5 p-1.5'>
