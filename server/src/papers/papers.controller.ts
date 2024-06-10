@@ -31,9 +31,9 @@ interface Paper {
 export class PapersController {
   constructor(private readonly papersService: PapersService) {}
 
-  @Get()
-  async findPapers(@Request() req) {
-    return await this.papersService.findPapers(req.user.id);
+  @Get(':examId')
+  async findPapers(@Param('examId') examId: number, @Request() req) {
+    return await this.papersService.findPapers(examId, req.user.id);
   }
 
   @Get(':id')

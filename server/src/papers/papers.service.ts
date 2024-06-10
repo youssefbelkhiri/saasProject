@@ -28,9 +28,10 @@ export class PapersService {
     return;
   }
 
-  async findPapers(user_id: number) {
+  async findPapers(exam_id: number, user_id: number) {
     return await this.prisma.papers.findMany({
       where: {
+        exam_id: Number(exam_id),
         exam: {
           user_id: +user_id,
         },

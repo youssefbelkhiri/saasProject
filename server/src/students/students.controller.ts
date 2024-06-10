@@ -27,6 +27,7 @@ export class StudentsController {
 
   @Get('/:id')
   async getStudent(@Param('id') id: number, @Request() req) {
+    console.log(id);
     return await this.studentsService.getStudent(id, req.user.id);
   }
 

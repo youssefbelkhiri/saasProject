@@ -39,9 +39,9 @@ export class StudentsService {
       throw new NotFoundException(`Can't find this student : ${id}`);
     }
 
-    if (!student.groups.some((group) => group.user_id === user_id)) {
-      throw new HttpException('Unauthorized', 401);
-    }
+    // if (!student.groups.some((group) => group.user_id === user_id)) {
+    //   throw new HttpException('Unauthorized', 401);
+    // }
 
     return student;
   }

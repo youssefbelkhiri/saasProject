@@ -7,60 +7,81 @@ import { metadata } from "./studentsMetadata";
 import ErrorPage from "@/app/error/page";
 import AddStudentModal from "./AddStudentModal";
 import StudentTable from "./StudentTable";
+import axios from "axios";
 
 const StudentsPage = () => {
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [papers, setPapers] = useState([]);
   const { examId } = useParams();
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
-    const sampleStudents = [
-      {
-        id: 1,
-        studentNumber: "1001",
-        firstName: "John",
-        lastName: "Doe",
-        groups: ["Group A", "Group B"],
-      },
-      {
-        id: 2,
-        studentNumber: "1002",
-        firstName: "Jane",
-        lastName: "Smith",
-        groups: ["Group B"],
-      },
-      {
-        id: 3,
-        studentNumber: "1003",
-        firstName: "Michael",
-        lastName: "Johnson",
-        groups: [],
-      },
-      {
-        id: 4,
-        studentNumber: "1004",
-        firstName: "Emily",
-        lastName: "Brown",
-        groups: ["Group C", "Group D"],
-      },
-      {
-        id: 5,
-        studentNumber: "1005",
-        firstName: "David",
-        lastName: "Wilson",
-        groups: ["Group A"],
-      },
-    ];
-    setStudents(sampleStudents);
-  }, []);
+    const fetchPaperData = async () => {
+      try {
+        const authToken = localStorage.getItem("authToken");
+        const response = await axios.get(
+          `http://localhost:3000/api/papers/${Number(examId)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          },
+        );
 
-  const filteredStudents = students.filter((student) =>
-    `${student.firstName} ${student.lastName}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase()),
-  );
+        setPapers(response.data);
+
+        const studentResponse = await axios.get(
+          `http://localhost:3000/api/students`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          },
+        );
+
+        console.log(studentResponse.data);
+
+        const paperStudentIds = response.data.map((paper) => paper.student_id);
+
+        const filteredStudents = studentResponse.data.filter((student) =>
+          paperStudentIds.includes(student.student_id),
+        );
+        console.log(filteredStudents);
+        setStudents(filteredStudents);
+
+        // const paperData = await response.json();
+        // const studentIds = paperData.studentIds;
+
+        // const studentsResponse = await fetch(
+        //   `/api/students?ids=${studentIds.join(",")}`,
+        // );
+        // const studentsData = await studentsResponse.json();
+        // setStudents(studentsData);
+
+        // const groupsResponse = await fetch(
+        //   `/api/groups?studentIds=${studentIds.join(",")}`,
+        // );
+        // const groupsData = await groupsResponse.json();
+        // setGroups(groupsData);
+
+        // setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching paper data:", error);
+      }
+    };
+
+    if (examId) {
+      fetchPaperData();
+    }
+  }, [examId]);
+
+  // const filteredStudents = students.filter((student) =>
+  //   `${student.first_name} ${student.last_name}`
+  //     .toLowerCase()
+  //     .includes(searchQuery.toLowerCase()),
+  // );
 
   const openAddStudentModal = () => {
     setIsAddStudentModalOpen(true);
@@ -70,8 +91,26 @@ const StudentsPage = () => {
     setIsAddStudentModalOpen(false);
   };
 
-  const deleteStudent = (studentId) => {
-    setStudents(students.filter((student) => student.id !== studentId));
+  const deleteStudent = async (studentId) => {
+    console.log(papers);
+    const authToken = localStorage.getItem("authToken");
+    const selectedPapers = papers.filter(
+      (paper) => paper.student_id === studentId,
+    );
+    console.log(selectedPapers);
+
+    const selectedPaperIds = selectedPapers.map((paper) => paper.paper_id);
+
+    const response = await axios.delete(
+      `http://localhost:3000/api/papers/${selectedPaperIds}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    );
+
+    setStudents(students.filter((student) => student.student_id !== studentId));
   };
 
   if (!examId) {
@@ -142,10 +181,7 @@ const StudentsPage = () => {
             </div>
           </div>
 
-          <StudentTable
-            students={filteredStudents}
-            onDeleteStudent={deleteStudent}
-          />
+          <StudentTable students={students} onDeleteStudent={deleteStudent} />
         </div>
       </section>
 
