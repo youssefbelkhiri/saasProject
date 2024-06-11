@@ -83,6 +83,51 @@ export class PapersController {
     );
   }
 
+
+
+  @Patch('upload/:paperId')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const uniqueSuffix = `${Date.now()}-${uuidv4()}`;
+          const ext = extname(file.originalname);
+          const filename = `${uniqueSuffix}${ext}`;
+
+          callback(null, filename);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        const allowedExtensions = ['.png', '.jpg', '.jpeg', '.pdf'];
+        const ext = extname(file.originalname).toLowerCase();
+
+        if (allowedExtensions.includes(ext)) {
+          callback(null, true);
+        } else {
+          callback(
+            new BadRequestException(
+              'Invalid file type. Only PNG, JPG, JPEG, and PDF are allowed.',
+            ),
+            false,
+          );
+        }
+      },
+    }),
+  )
+  async updateOrImportPaper(
+    @Param('paperId') paperId: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req,
+  ): Promise<void> {
+    return await this.papersService.updateOrImportPaper(
+      paperId,
+      file.filename,
+      req.user.id,
+    );
+  }
+
+
   // @Post('test')
   // @UseInterceptors(FileInterceptor('file'))
   // uploadFile(@UploadedFile() file: Express.Multer.File) {

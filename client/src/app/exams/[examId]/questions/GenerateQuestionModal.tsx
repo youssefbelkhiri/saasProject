@@ -1,207 +1,259 @@
-import React, { useState } from 'react';
+"use client";
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
-import { Hourglass } from 'react-loader-spinner';
+import { Oval } from 'react-loader-spinner';
 
-const GenerateQuestionModal = ({ isOpen, onClose, language, examId, updateQuestionList }) => {
-  const [selectedDifficulty, setSelectedDifficulty] = useState('');
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [questions, setQuestions] = useState(null);
-  const [isGenerated, setIsGenerated] = useState(false);
+const GradingPage = () => {
+  const [papers, setPapers] = useState([]);
+  const { examId } = useParams();
+  const [exam, setExam] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState({});
   const [loading, setLoading] = useState(false);
-  const [context, setContext] = useState('');
-  const [points, setPoints] = useState('');
-  const [addedQuestions, setAddedQuestions] = useState([]);
-  const [addedIndexes, setAddedIndexes] = useState([]);
 
-
-
-  const handleGenerateClick = async () => {
-    const authToken = localStorage.getItem("authToken");
-
-    setLoading(true);
-
-    try {
-      const response = await axios.post('http://localhost:3000/api/questions/gen', {
-        content: context,
-        nbrOptions: selectedOption || 4,
-        difficulty: selectedDifficulty || 'easy',
-        language: language || 'english',
-        points: points || 2,
-      }, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        }
-      });
-      console.log('Questions generated:', response.data);
-      setQuestions(response.data);
-      setIsGenerated(true);
-    } catch (error) {
-      console.error('Error generating questions:', error);
-    } finally {
-      setLoading(false);
-    }
+  const fetchExamData = async (examId) => {
+    // Your code to fetch exam data
   };
 
-  const handleAddToExam = async (question, index) => {
-    const authToken = localStorage.getItem("authToken");
+  useEffect(() => {
+    if (examId) {
+      fetchExamData(examId).then(data => setExam(data));
+    }
+  }, [examId]);
 
-    setAddedQuestions([...addedQuestions, index]);
+  useEffect(() => {
+    const fetchPaperData = async () => {
+      try {
+        const authToken = localStorage.getItem("authToken");
 
-    const formattedOptions = question.options.map((option, index) => ({
-      optionOrder: index + 1,
-      option: option.option,
-      correct: option.correct,
-    }));
+        const response = await axios.get(
+          `http://localhost:3000/api/papers/${Number(examId)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          },
+        );
 
-    const questionData = {
-      questionOrder: 1,
-      difficulty: selectedDifficulty,
-      points: Number(points),
-      content: question.content,
-      exam_id: Number(examId),
-      options: formattedOptions,
+        setPapers(response.data);
+
+        // Fetch all students
+        const studentResponse = await axios.get(
+          `http://localhost:3000/api/students`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          },
+        );
+
+        setStudents(studentResponse.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
 
-    console.log('Adding question to exam:', questionData)
+    if (examId) {
+      fetchPaperData();
+    }
+  }, [examId]);
+
+  const handleGradePaper = async (paperId) => {
+    const file = uploadedFiles[paperId];
+    console.log(paperId);
+    console.log("file " + file);
+
+    setLoading(true); // Start loading
 
     try {
-      const response = await axios.post('http://localhost:3000/api/questions/', questionData, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        }
-      });
-      console.log('Question added to exam:', response.data);
-      
-        setAddedIndexes([...addedIndexes, index]);
-        setAddedQuestions([...addedQuestions, question]);
-        updateQuestionList(question);
-    } catch (error) {
-      console.error('Error adding question to exam:', error);
-      setAddedQuestions(addedQuestions.filter(i => i !== index));
-      setAddedIndexes(addedIndexes.filter(i => i !== index));
+      const authToken = localStorage.getItem("authToken");
+      const fileFormData = new FormData();
+      fileFormData.append('file', file);
+      console.log(fileFormData);
 
+      const uploadResponse = await axios.patch(
+        `http://localhost:3000/api/papers/upload/${paperId}`,
+        fileFormData,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      console.log('Paper ID:', uploadResponse.data.paper_id);
+
+      // Send grading request
+      const gradingDto = {
+        exam_id: Number(examId),
+        paper_id: paperId
+      };
+
+      const gradingResponse = await axios.post(
+        `http://localhost:3000/api/grading`,
+        gradingDto,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      );
+
+      console.log('Grading Response:', gradingResponse.data);
+
+      // Update the note in the papers state
+      setPapers(prevPapers =>
+        prevPapers.map(paper =>
+          paper.paper_id === paperId
+            ? { ...paper, note: gradingResponse.data.note }
+            : paper
+        )
+      );
+    } catch (error) {
+      console.error("Error grading paper:", error);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
-  const handleBackClick = () => {
-    setIsGenerated(false);
-    setQuestions(null);
-    setAddedQuestions([]);
-    setAddedIndexes([]);
+  const handleFileUpload = (paperId, file) => {
+    console.log(file);
+    setUploadedFiles(prevFiles => ({
+      ...prevFiles,
+      [paperId]: file
+    }));
   };
 
-  return (
-    <div className={`fixed z-10 inset-0 overflow-y-auto ${isOpen ? 'block' : 'hidden'}`}>
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="fixed inset-0 bg-gray-500 opacity-75"></div>
-        <div className="relative bg-white p-6 rounded-lg shadow-xl dark:bg-dark flex overflow-y-auto overflow-x-hidden fixed justify-center items-center w-4/5 max-w-7xl mx-auto z-20">
-          <div className="flex w-full">
-            <div className={`flex-1 ${isGenerated ? 'overflow-y-auto' : ''}`}>
-              <div className="flex w-full items-center justify-between">
-                <p className="m-0 text-md text-content-primary font-semibold dark:text-white">Questions generator</p>
-                {isGenerated && (
-                  <button className="flex items-center mr-3 text-blue-500 ml-2" onClick={handleBackClick}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#4a6cf7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                    Back
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-col mt-6" style={{ height: '400px' }}>
-                {loading ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Hourglass height={50} width={50}  colors={['#306cce', '#72a1ed']} />
-                  </div>
-                ) : questions ? (
-                  <div>
-                    {questions.map((question, index) => (
-                      <div key={index} className="mb-4 mr-4 p-4 border-stroke border bg-[#f8f8f8] focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary">
-                        <p className="text-content-primary dark:text-white font-semibold">Question {index + 1}: {question.content}</p>
-                        <div className="mt-2">
-                          {question.options.map((option, optionIndex) => (
-                            <div key={optionIndex} className="ml-4 flex items-center">
-                              <span className={`text-body-color dark:text-body-color-dark ${option.correct ? 'text-green-500 font-semibold' : ''}`}>
-                                {option.option}
-                              </span>
-                              {option.correct && <svg className="h-5 w-5 text-green-500 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>}
-                            </div>
-                          ))}
-                        </div>
-                        <button className="mt-2 px-4 py-2 bg-blue-500 text-white rounded" onClick={() => handleAddToExam(question, index)}>
-                          {addedIndexes.includes(index) ? 'Added' : 'Add to Exam'}
-                        </button>
+  const filteredStudents = students.filter(student => 
+    papers.some(paper => paper.student_id === student.student_id)
+  );
 
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <>
-                    <label className="label text-content-primary mb-1 select-none text-sm font-medium dark:text-white" htmlFor="context">
-                      Context
-                    </label>
-                    <div className="input-wrapper bg-background-form hover:bg-background-form-hover relative flex rounded-lg transition-[colors_border-color]">
-                      <textarea
-                        id="context"
-                        className="min-h-[40px] max-h-[400px] w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none overflow-auto"
-                        placeholder="Enter question context here..."
-                        style={{ height: '360px' }}
-                        value={context}
-                        onChange={(e) => setContext(e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="w-1/3 bg-background-neutral-subtle dark:bg-gray-700 p-6 ml-6 rounded-lg flex flex-col justify-between">
-              <div>
-                <div className="mb-6">
-                  <p className="m-0 text-md text-content-primary font-semibold dark:text-white">Difficulty</p>
-                  <div className="mt-2 flex gap-2">
-                    <button className={`w-p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-${selectedDifficulty === 'Easy' ? 'primary text-white dark:bg-primary dark:text-white' : '#f8f8f8'} px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none`} onClick={() => setSelectedDifficulty('Easy')}>Easy</button>
-                    <button className={`w-p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-${selectedDifficulty === 'Medium' ? 'primary text-white dark:bg-primary dark:text-white' : '#f8f8f8'} px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none`} onClick={() => setSelectedDifficulty('Medium')}>Medium</button>
-                    <button className={`w-p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-${selectedDifficulty === 'Hard' ? 'primary text-white dark:bg-primary dark:text-white' : '#f8f8f8'} px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none`} onClick={() => setSelectedDifficulty('Hard')}>Hard</button>
-                  </div>
-                </div>
-                <div className="mb-6">
-                  <p className="m-0 text-md text-content-primary font-semibold dark:text-white">Number of options</p>
-                  <div className="mt-2 flex gap-2">
-                    {[2, 3, 4, 5, 6].map(option => (
-                      <button key={option} className={`w-p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-${selectedOption === option ? 'primary text-white dark:bg-primary dark:text-white' : '#f8f8f8'} px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none`} onClick={() => setSelectedOption(option)}>{option}</button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mb-6">
-                  <p className="m-0 text-md text-content-primary font-semibold dark:text-white">Points</p>
-                  <input
-                    type="number"
-                    className="w-full p-2 border-stroke dark:text-body-color-dark dark:shadow-two rounded-sm border bg-[#f8f8f8] px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
-                    placeholder="Enter points"
-                    value={points}
-                    onChange={(e) => setPoints(e.target.value)}
-                  />
-                </div>
-              </div>
-              <button className="w-full p-2 border rounded bg-primary text-white mt-auto" onClick={handleGenerateClick}>
-                Generate
-              </button>
-            </div>
-            <button
-              type="button"
-              className="absolute top-6 right-6 text-content-primary bg-background-default focus-visible:border-border-brand hover:bg-action-hover-ghost cursor-pointer select-none p-0 outline-0 transition-[background-color_shadow] active:outline-0 sm:transition-all flex items-center justify-center gap-2 rounded-lg px-3 py-2 bg-transparent hover:bg-action-hover-ghost dark:text-white"
-              onClick={onClose}
-            >
-              <svg className="text-content-primary text-2xl transition-all text-content-onBrand group-hover:text-content-primary startIcon h-4 w-4 dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <p className="m-0 text-content-onBrand text group-hover:text-content-primary whitespace-nowrap font-semibold transition-[color] dark:text-white">Close</p>
-            </button>
+  return (
+    <>
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <Oval
+            height={80}
+            width={80}
+            color="#4fa94d"
+            wrapperStyle={{}}
+            wrapperClass=""
+            visible={true}
+            ariaLabel='oval-loading'
+            secondaryColor="#4fa94d"
+            strokeWidth={2}
+            strokeWidthSecondary={2}
+          />
+        </div>
+      )}
+      <section className={`relative z-10 py-16 md:py-20 lg:py-28 ${loading ? 'opacity-50' : ''}`}>
+        <div className="mx-auto max-w-[90%] rounded-lg bg-white px-6 py-10 shadow-three dark:bg-dark sm:p-[60px] md:max-w-[70%] lg:max-w-[90%]">
+          <div className="container mx-auto text-center mb-12">
+            <nav className="flex justify-center space-x-4">
+              <Link href={`/exams/${examId}/overview`} passHref>
+                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Overview</span>
+              </Link>
+              <Link href={`/exams/${examId}/questions`} passHref>
+                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Questions</span>
+              </Link>
+              <Link href={`/exams/${examId}/students`} passHref>
+                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Students</span>
+              </Link>
+              <Link href={`/exams/${examId}/grading`} passHref>
+                <span className={`text-lg font-semibold text-primary hover:text-primary cursor-pointer`}>Grading</span>
+              </Link>
+              <Link href={`/exams/${examId}/reports`} passHref>
+                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Reports</span>
+              </Link>
+            </nav>
+          </div>
+          <div className="container mx-auto p-4">
+            <input
+              type="text"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search students..."
+              className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-800 dark:text-white w-full mt-4"
+            />
+
+            <table className="w-full mt-4">
+              <thead className='text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-100'>
+                <tr>
+                  <th className="border px-4 py-2">Student Number</th>
+                  <th className="border px-4 py-2">First Name</th>
+                  <th className="border px-4 py-2">Last Name</th>
+                  <th className="border px-4 py-2">Import Paper</th>
+                  <th className="border px-4 py-2">Grade Paper</th>
+                  <th className="border px-4 py-2">Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredStudents.map(student => {
+                  const studentPapers = papers.filter(paper => paper.student_id === student.student_id);
+                  return studentPapers.map(paper => (
+                    <tr key={paper.paper_id}>
+                      <td className="border px-4 py-2">{student.student_number}</td>
+                      <td className="border px-4 py-2">{student.first_name}</td>
+                      <td className="border px-4 py-2">{student.last_name}</td>
+                      <td className="border px-4 py-2">
+                        <DropzoneComponent
+                          paperId={paper.paper_id}
+                          handleFileUpload={handleFileUpload}
+                          fileName={paper.paper || ""}
+                        />
+                      </td>
+                      <td className="border px-4 py-2">
+                        <button
+                          onClick={() => handleGradePaper(paper.paper_id)}
+                          className="mr-2 bg-white border border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors duration-300 focus:outline-none dark:bg-gray-800 dark:text-primary">
+                          Grade Paper
+                        </button>
+                      </td>
+                      <td className="border px-4 py-2">{paper.note !== -1 ? paper.note : '-1'}</td>
+                    </tr>
+                  ));
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
+      </section>
+    </>
+  );
+};
+
+const DropzoneComponent = ({ paperId, handleFileUpload, fileName }) => {
+  const [displayFileName, setDisplayFileName] = useState(fileName);
+
+  const onDrop = (acceptedFiles) => {
+    const file = acceptedFiles[0];
+    handleFileUpload(paperId, file);
+    setDisplayFileName(file.name);
+  };
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: {
+      'image/png': ['.png'],
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'application/pdf': ['.pdf'],
+    },
+  });
+
+  return (
+    <div {...getRootProps({ className: 'border-dashed border-2 border-gray-300 p-4 rounded-lg cursor-pointer' })}>
+      <input {...getInputProps()} />
+      {displayFileName ? (
+        <p className="text-gray-700 dark:text-white">{displayFileName}</p>
+      ) : (
+        <p className="text-gray-500 dark:text-white">Drag & drop a file here, or click to select one</p>
+      )}
     </div>
   );
 };
 
-export default GenerateQuestionModal;
+export default GradingPage;

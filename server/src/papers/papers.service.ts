@@ -101,6 +101,36 @@ export class PapersService {
     });
   }
 
+  async updateOrImportPaper(paperId: number, filename: string, user_id: number) {
+    const paper = await this.prisma.papers.findUnique({
+      where: { paper_id: +paperId },
+      select: {
+        exam: { select: { user_id: true } },
+        student: { select: { groups: { select: { user_id: true } } } },
+      },
+    });
+  
+    if (!paper) {
+      throw new NotFoundException('Paper not found');
+    }
+  
+    const { exam, student } = paper;
+  
+    if (!exam || !student) {
+      throw new NotFoundException("Can't find associated exam or student");
+    }
+  
+    if (!student.groups.some((group) => group.user_id === user_id) || exam.user_id !== user_id) {
+      throw new HttpException('Unauthorized', 401);
+    }
+  
+    await this.prisma.papers.update({
+      where: { paper_id: +paperId },
+      data: { paper: filename },
+    });
+  }
+
+
   async updatePaper(id: number, paperDto: UpdatePapertDto, user_id: number) {
     const paper = await this.prisma.papers.findUnique({
       where: { paper_id: +id },

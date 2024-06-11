@@ -102,8 +102,6 @@ const QuestionsPage = () => {
       setSelectedQuestion({ ...selectedQuestion, [name]: value });
     }
   };
-  
-  
 
   const handleAddOption = () => {
     setSelectedQuestion({
@@ -202,6 +200,7 @@ const QuestionsPage = () => {
   const handleCreateQuestion = (newQuestion) => {
     setQuestions([...questions, newQuestion]);
     setCreateQuestionModalOpen(false);
+    setSelectedQuestion(newQuestion);
   };
 
   const updateQuestionList = (newQuestion) => {
@@ -269,8 +268,16 @@ const QuestionsPage = () => {
                       role="alert"
                     >
                       <span className="font-medium">{message}</span>
+                      <button
+                        type="button"
+                        className="ml-4 text-red-500"
+                        onClick={() => setMessage('')}
+                      >
+                        <svg className="text-content-primary text-2xl transition-all text-content-onBrand group-hover:text-content-primary startIcon h-4 w-4 dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      </button>
                     </div>
                   )}
+
 
                   <div className="mb-4">
                     <label
