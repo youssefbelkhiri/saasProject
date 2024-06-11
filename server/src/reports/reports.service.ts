@@ -6,15 +6,15 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReportsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getNotesStatistics(exam_id: number, groupe_id: number, user_id: number) {
-    const group = await this.prismaService.groups.findUnique({
-      where: {
-        group_id: +groupe_id,
-      },
-      select: {
-        user_id: true,
-      },
-    });
+  async getNotesStatistics(exam_id: number, user_id: number) {
+    // const group = await this.prismaService.groups.findUnique({
+    //   where: {
+    //     group_id: +groupe_id,
+    //   },
+    //   select: {
+    //     user_id: true,
+    //   },
+    // });
 
     const exam = await this.prismaService.exam.findUnique({
       where: {
@@ -25,30 +25,27 @@ export class ReportsService {
       },
     });
 
-    if (!group || !exam) {
-      throw new NotFoundException(`Can't find exam or group`);
-    }
-  
-    if (exam.user_id !== user_id || group.user_id !== user_id) {
-      throw new HttpException('Unauthorized', 401);
-    }
+    // if (!group || !exam) {
+    //   throw new NotFoundException(`Can't find exam or group`);
+    // }
 
-    
+    // if (exam.user_id !== user_id || group.user_id !== user_id) {
+    //   throw new HttpException('Unauthorized', 401);
+    // }
 
-    const studentsInGroup = await this.prismaService.student_group.findMany({
+    const studentsPaper = await this.prismaService.papers.findMany({
       where: {
-        group_id: +groupe_id,
+        exam_id: +exam_id,
       },
       select: {
         student_id: true,
       },
     });
 
+    // console.log(studentsInGroup)
 
-    console.log(studentsInGroup)
-
-    const studentIds = studentsInGroup.map((student) => student.student_id);
-    console.log(studentIds)
+    const studentIds = studentsPaper.map((student) => student.student_id);
+    console.log(studentIds);
 
     const results = await this.prismaService.papers.groupBy({
       by: ['exam_id'],
