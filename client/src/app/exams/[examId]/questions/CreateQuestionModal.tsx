@@ -215,7 +215,7 @@ interface CreateQuestionDto {
 const CreateQuestionModal = ({
   isOpen,
   onClose,
-  handleCreateQuestion,
+  updateQuestionList,
   examId,
 }) => {
   const [questionData, setQuestionData] = useState<CreateQuestionDto>({
@@ -258,7 +258,6 @@ const CreateQuestionModal = ({
       });
     }
   };
-  
 
   const handleAddOption = () => {
     const newOption: CreateOptionDto = {
@@ -299,7 +298,12 @@ const CreateQuestionModal = ({
         },
       );
 
-      handleCreateQuestion(response.data);
+      updateQuestionList({
+        ...questionData,
+        question_id: response.data.question_id,
+      });
+
+      // handleCreateQuestion(response.data);
       setQuestionData({
         questionOrder: 0,
         content: "",
@@ -391,6 +395,19 @@ const CreateQuestionModal = ({
               />
             </div>
             <div className="mb-4">
+              <label className="mb-2 block text-sm font-bold" htmlFor="points">
+                Question order
+              </label>
+              <input
+                type="number"
+                id="questionOrder"
+                name="questionOrder"
+                value={questionData.questionOrder}
+                onChange={handleChange}
+                className="border-stroke w-full rounded-sm border bg-[#f8f8f8] p-2 px-3 py-2 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+              />
+            </div>
+            <div className="mb-4">
               <label className="mb-2 block text-sm font-bold">Options</label>
               <ul className="mb-4">
                 {questionData.options.map((option, index) => (
@@ -440,7 +457,7 @@ const CreateQuestionModal = ({
               Create
             </button>
             <button
-              className="w-full mt-4 rounded bg-red-500 px-4 py-2 text-white"
+              className="mt-4 w-full rounded bg-red-500 px-4 py-2 text-white"
               onClick={onClose}
             >
               Cancel

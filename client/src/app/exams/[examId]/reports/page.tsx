@@ -1,5 +1,6 @@
 "use client";
 
+import { NextPage } from "next";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -48,7 +49,9 @@ const fetchExams = async (examId) => {
   }
 };
 
-export const fetchStatistics = async (examId) => {
+const fetchStatistics: (examId: number) => Promise<StatsData> = async (
+  examId,
+) => {
   try {
     const authToken = localStorage.getItem("authToken");
 
@@ -69,10 +72,10 @@ export const fetchStatistics = async (examId) => {
   }
 };
 
-const ReportsPage = () => {
+const ReportsPage: NextPage = () => {
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
-  const [reportData, setReportData] = useState<StatsData>();
+  const [reportData, setReportData] = useState<StatsData | null>();
 
   useEffect(() => {
     const fetchData = async () => {
