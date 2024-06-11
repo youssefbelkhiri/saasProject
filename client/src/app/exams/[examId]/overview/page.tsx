@@ -87,6 +87,52 @@ const OverviewPage = () => {
 
   const currentPath = typeof window !== "undefined" ? window.location.hash : "";
 
+  const handleExportExam = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/exams/${Number(examId)}/export`,
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "exam.pdf");
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error("Error exporting exam:", error);
+    }
+  };
+
+  const handleExportAnswerSheet = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/exams/${Number(examId)}/exportAnswerSheet`,
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "answer_sheet.pdf");
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error("Error exporting answer sheet:", error);
+    }
+  };
+
   return (
     <>
       <section className="relative z-10 py-16 md:py-20 lg:py-28">
@@ -334,6 +380,24 @@ const OverviewPage = () => {
                     <p className="text-lg font-bold">Students</p>
                   </div>
                   <span className="text-lg">20 students</span>
+                </div>
+                <div className="mt-4">
+                  <div className="mt-4">
+                    <button
+                      onClick={handleExportExam}
+                      className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-2 text-base font-medium text-white shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
+                    >
+                      Export Exam
+                    </button>
+                  </div>
+                  <div className="mt-2">
+                    <button
+                      onClick={handleExportAnswerSheet}
+                      className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-2 text-base font-medium text-white shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
+                    >
+                      Export Answer Sheet
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

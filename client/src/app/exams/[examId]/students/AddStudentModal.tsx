@@ -29,6 +29,7 @@ const AddStudentModal = ({ isOpen, onClose, examId, students }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [Students, setStudents] = useState([]);
+  const [message, setMessage] = useState("");
 
   // Sample list of groups
   // const groups = ["Group A", "Group B", "Group C", "Group D"];
@@ -143,6 +144,7 @@ const AddStudentModal = ({ isOpen, onClose, examId, students }) => {
         },
       );
       console.log(response.data);
+      setMessage("Students added successfully!");
     } catch (error) {
       console.error("Error creating students paper", error);
     }
@@ -181,7 +183,14 @@ const AddStudentModal = ({ isOpen, onClose, examId, students }) => {
               </svg>
             </button>
             <h2 className="mb-4 text-lg font-semibold">Add Students to Exam</h2>
-
+            {message && (
+                  <div
+                    className="relative mb-4 mt-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700 dark:border-green-700 dark:bg-green-900 dark:text-green-200"
+                    role="alert"
+                  >
+                    <span className="block sm:inline">{message}</span>
+                  </div>
+                )}
             <div className="mt-10">
               <div className="mb-6 w-full">
                 <input

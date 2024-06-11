@@ -1,5 +1,6 @@
 "use client";
 
+import { NextPage } from "next";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -29,7 +30,7 @@ import axios from "axios";
 const ReportsPage = () => {
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
-  const [reportData, setReportData] = useState<StatsData>();
+  const [reportData, setReportData] = useState<StatsData | null>();
 
 
   interface StatsData {
@@ -60,7 +61,7 @@ const ReportsPage = () => {
   
       const response = await axios.post(
         "http://localhost:3000/api/reports/statistics",
-        { exam_id: examId },
+        { exam_id: Number(examId) },
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
