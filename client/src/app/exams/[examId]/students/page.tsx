@@ -189,6 +189,7 @@ const StudentsPage = () => {
       <AddStudentModal
         isOpen={isAddStudentModalOpen}
         onClose={closeAddStudentModal}
+        students={students}
         examId={examId}
       />
     </>

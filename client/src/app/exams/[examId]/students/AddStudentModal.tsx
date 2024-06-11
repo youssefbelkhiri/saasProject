@@ -5,7 +5,7 @@ import Select from "react-select";
 import StudentTableModal from "./StudentTableModal";
 import axios from "axios";
 
-const AddStudentModal = ({ isOpen, onClose, examId }) => {
+const AddStudentModal = ({ isOpen, onClose, examId, students }) => {
   const [newStudent, setNewStudent] = useState({
     studentNumber: "",
     firstName: "",
@@ -148,6 +148,13 @@ const AddStudentModal = ({ isOpen, onClose, examId }) => {
     }
   };
 
+  const filteredStudents = Students.filter(
+    (student) =>
+      !students.some(
+        (existingStudent) => existingStudent.student_id === student.student_id,
+      ),
+  );
+
   return (
     isOpen && (
       <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -215,7 +222,7 @@ const AddStudentModal = ({ isOpen, onClose, examId }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Students.map((student) => (
+                    {filteredStudents.map((student) => (
                       <tr
                         key={student.student_id}
                         className={
@@ -239,8 +246,12 @@ const AddStudentModal = ({ isOpen, onClose, examId }) => {
                         <td className="border px-4 py-2">
                           {student.student_number}
                         </td>
-                        <td className="border px-4 py-2">{student.first_name}</td>
-                        <td className="border px-4 py-2">{student.last_name}</td>
+                        <td className="border px-4 py-2">
+                          {student.first_name}
+                        </td>
+                        <td className="border px-4 py-2">
+                          {student.last_name}
+                        </td>
                         <td className="border px-4 py-2">
                           {student.groups?.length > 0
                             ? student.groups.join(", ")
@@ -251,7 +262,6 @@ const AddStudentModal = ({ isOpen, onClose, examId }) => {
                   </tbody>
                 </table>
               </div>
-
             </div>
             <div className="mt-4 flex justify-end">
               <button
