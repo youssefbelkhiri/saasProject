@@ -1,22 +1,20 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
-import { Oval, ColorRing } from 'react-loader-spinner';
-
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useDropzone } from "react-dropzone";
+import axios from "axios";
+import { Oval, ColorRing } from "react-loader-spinner";
 
 const GradingPage = () => {
   const [papers, setPapers] = useState([]);
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
   const [students, setStudents] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState({});
   const [loading, setLoading] = useState(false);
-
 
   const fetchExamData = async (examId) => {
     // Your code to fetch exam data
@@ -24,7 +22,7 @@ const GradingPage = () => {
 
   useEffect(() => {
     if (examId) {
-      fetchExamData(examId).then(data => setExam(data));
+      fetchExamData(examId).then((data) => setExam(data));
     }
   }, [examId]);
 
@@ -81,7 +79,7 @@ const GradingPage = () => {
 
       const authToken = localStorage.getItem("authToken");
       const fileFormData = new FormData();
-      fileFormData.append('file', file);
+      fileFormData.append("file", file);
       console.log(fileFormData);
 
       const uploadResponse = await axios.patch(
@@ -90,17 +88,17 @@ const GradingPage = () => {
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         },
       );
 
-      console.log('Paper ID:', uploadResponse.data.paper_id);
+      console.log("Paper ID:", uploadResponse.data.paper_id);
 
       // Send grading request
       const gradingDto = {
         exam_id: Number(examId),
-        paper_id: paperId
+        paper_id: paperId,
       };
 
       const gradingResponse = await axios.post(
@@ -113,41 +111,39 @@ const GradingPage = () => {
         },
       );
 
-      console.log('Grading Response:', gradingResponse.data);
+      console.log("Grading Response:", gradingResponse.data);
 
       // Update the note in the papers state
-      setPapers(prevPapers =>
-        prevPapers.map(paper =>
+      setPapers((prevPapers) =>
+        prevPapers.map((paper) =>
           paper.paper_id === paperId
             ? { ...paper, note: gradingResponse.data.note }
-            : paper
-        )
+            : paper,
+        ),
       );
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error grading paper:", error);
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
 
   const handleFileUpload = (paperId, file) => {
     console.log(file);
-    setUploadedFiles(prevFiles => ({
+    setUploadedFiles((prevFiles) => ({
       ...prevFiles,
-      [paperId]: file
+      [paperId]: file,
     }));
   };
 
-  const filteredStudents = students.filter(student => 
-    papers.some(paper => paper.student_id === student.student_id)
+  const filteredStudents = students.filter((student) =>
+    papers.some((paper) => paper.student_id === student.student_id),
   );
 
   return (
     <>
-    {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-[9999]">
+      {loading && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-30">
           <ColorRing
             height={80}
             width={80}
@@ -155,28 +151,48 @@ const GradingPage = () => {
             ariaLabel="color-ring-loading"
             wrapperStyle={{}}
             wrapperClass="color-ring-wrapper"
-            colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
+            colors={["#e15b64", "#f47e60", "#f8b26a", "#abbd81", "#849b87"]}
           />
         </div>
       )}
       <section className="relative z-10 py-16 md:py-20 lg:py-28">
         <div className="mx-auto max-w-[90%] rounded-lg bg-white px-6 py-10 shadow-three dark:bg-dark sm:p-[60px] md:max-w-[70%] lg:max-w-[90%]">
-          <div className="container mx-auto text-center mb-12">
+          <div className="container mx-auto mb-12 text-center">
             <nav className="flex justify-center space-x-4">
               <Link href={`/exams/${examId}/overview`} passHref>
-                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Overview</span>
+                <span
+                  className={`cursor-pointer text-lg font-semibold text-black hover:text-primary dark:text-white`}
+                >
+                  Overview
+                </span>
               </Link>
               <Link href={`/exams/${examId}/questions`} passHref>
-                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Questions</span>
+                <span
+                  className={`cursor-pointer text-lg font-semibold text-black hover:text-primary dark:text-white`}
+                >
+                  Questions
+                </span>
               </Link>
               <Link href={`/exams/${examId}/students`} passHref>
-                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Students</span>
+                <span
+                  className={`cursor-pointer text-lg font-semibold text-black hover:text-primary dark:text-white`}
+                >
+                  Students
+                </span>
               </Link>
               <Link href={`/exams/${examId}/grading`} passHref>
-                <span className={`text-lg font-semibold text-primary hover:text-primary cursor-pointer`}>Grading</span>
+                <span
+                  className={`cursor-pointer text-lg font-semibold text-primary hover:text-primary`}
+                >
+                  Grading
+                </span>
               </Link>
               <Link href={`/exams/${examId}/reports`} passHref>
-                <span className={`text-lg font-semibold text-black dark:text-white hover:text-primary cursor-pointer`}>Reports</span>
+                <span
+                  className={`cursor-pointer text-lg font-semibold text-black hover:text-primary dark:text-white`}
+                >
+                  Reports
+                </span>
               </Link>
             </nav>
           </div>
@@ -185,11 +201,11 @@ const GradingPage = () => {
               type="text"
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search students..."
-              className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:border-primary dark:bg-gray-800 dark:text-white w-full mt-4"
+              className="mt-4 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none dark:bg-gray-800 dark:text-white"
             />
 
-            <table className="w-full mt-4">
-              <thead className='text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-100'>
+            <table className="mt-4 w-full">
+              <thead className="bg-gray-100 uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-100">
                 <tr>
                   <th className="border px-4 py-2">Student Number</th>
                   <th className="border px-4 py-2">First Name</th>
@@ -200,11 +216,15 @@ const GradingPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map(student => {
-                  const studentPapers = papers.filter(paper => paper.student_id === student.student_id);
-                  return studentPapers.map(paper => (
+                {filteredStudents.map((student) => {
+                  const studentPapers = papers.filter(
+                    (paper) => paper.student_id === student.student_id,
+                  );
+                  return studentPapers.map((paper) => (
                     <tr key={paper.paper_id}>
-                      <td className="border px-4 py-2">{student.student_number}</td>
+                      <td className="border px-4 py-2">
+                        {student.student_number}
+                      </td>
                       <td className="border px-4 py-2">{student.first_name}</td>
                       <td className="border px-4 py-2">{student.last_name}</td>
                       <td className="border px-4 py-2">
@@ -217,11 +237,14 @@ const GradingPage = () => {
                       <td className="border px-4 py-2">
                         <button
                           onClick={() => handleGradePaper(paper.paper_id)}
-                          className="mr-2 bg-white border border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors duration-300 focus:outline-none dark:bg-gray-800 dark:text-primary">
+                          className="hover:bg-primary-dark mr-2 rounded-lg border border-primary bg-white px-4 py-2 text-primary transition-colors duration-300 focus:outline-none dark:bg-gray-800 dark:text-primary"
+                        >
                           Grade Paper
                         </button>
                       </td>
-                      <td className="border px-4 py-2">{paper.note != -1 ? paper.note : '-'}</td>
+                      <td className="border px-4 py-2">
+                        {paper.note != -1 ? paper.note : "-"}
+                      </td>
                     </tr>
                   ));
                 })}
@@ -245,19 +268,26 @@ const DropzoneComponent = ({ paperId, handleFileUpload, fileName }) => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
-      'image/png': ['.png'],
-      'image/jpeg': ['.jpg', '.jpeg'],
-      'application/pdf': ['.pdf'],
+      "image/png": [".png"],
+      "image/jpeg": [".jpg", ".jpeg"],
+      "application/pdf": [".pdf"],
     },
   });
 
   return (
-    <div {...getRootProps({ className: 'border-dashed border-2 border-gray-300 p-4 rounded-lg cursor-pointer' })}>
+    <div
+      {...getRootProps({
+        className:
+          "border-dashed border-2 border-gray-300 p-4 rounded-lg cursor-pointer",
+      })}
+    >
       <input {...getInputProps()} />
       {displayFileName ? (
         <p className="text-gray-700 dark:text-white">{displayFileName}</p>
       ) : (
-        <p className="text-gray-500 dark:text-white">Drag & drop a file here, or click to select one</p>
+        <p className="text-gray-500 dark:text-white">
+          Drag & drop a file here, or click to select one
+        </p>
       )}
     </div>
   );

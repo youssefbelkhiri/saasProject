@@ -10,6 +10,6 @@ export class ReportsControllers {
   @Post('statistics')
   async statistcs(@Body() body, @Request() req) {
     const { group_id, exam_id } = body;
-    return this.reportsService.getNotesStatistics(exam_id, group_id, req.user.id);
+    return this.reportsService.getNotesStatistics(exam_id, req.user.id);
   }
 }
