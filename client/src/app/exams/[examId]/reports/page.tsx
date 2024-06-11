@@ -26,53 +26,54 @@ import {
 import ErrorPage from "@/app/error/page";
 import axios from "axios";
 
-interface StatsData {
-  result: any[];
-  gradeCounts: Record<string, number>;
-}
-
-const fetchExams = async (examId) => {
-  try {
-    const authToken = localStorage.getItem("authToken");
-
-    const response = await axios.get("http://localhost:3000/api/exams", {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
-    console.log(response.data);
-    return response.data.find((exam) => exam.exam_id === parseInt(examId));
-    // setExams(response.data);
-  } catch (error) {
-    console.error("Error fetching exams:", error);
-  }
-};
-
-export const fetchStatistics = async (examId) => {
-  try {
-    const authToken = localStorage.getItem("authToken");
-
-    const response = await axios.post(
-      "http://localhost:3000/api/reports/statistics",
-      { exam_id: examId },
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      },
-    );
-
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching statistics:", error);
-    throw error;
-  }
-};
-
 const ReportsPage = () => {
   const { examId } = useParams();
   const [exam, setExam] = useState(null);
   const [reportData, setReportData] = useState<StatsData>();
+
+
+  interface StatsData {
+    result: any[];
+    gradeCounts: Record<string, number>;
+  }
+  
+  const fetchExams = async (examId) => {
+    try {
+      const authToken = localStorage.getItem("authToken");
+  
+      const response = await axios.get("http://localhost:3000/api/exams", {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+      console.log(response.data);
+      return response.data.find((exam) => exam.exam_id === parseInt(examId));
+      // setExams(response.data);
+    } catch (error) {
+      console.error("Error fetching exams:", error);
+    }
+  };
+  
+  const fetchStatistics = async (examId) => {
+    try {
+      const authToken = localStorage.getItem("authToken");
+  
+      const response = await axios.post(
+        "http://localhost:3000/api/reports/statistics",
+        { exam_id: examId },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      );
+  
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,7 +82,7 @@ const ReportsPage = () => {
         setExam(examData);
 
         if (examData) {
-          const statsData = await fetchStatistics(Number(examId));
+          const statsData = await fetchStatistics((examId));
           console.log(statsData);
           setReportData(statsData);
         }
