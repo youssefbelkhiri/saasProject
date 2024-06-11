@@ -47,7 +47,7 @@ const AboutSectionTwo = () => {
                   Easy to use
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                  ExamGenerator is very easy to use, you don't need to be an expert to use it.
+                  ExamGenerator is very easy to use, you don&apos;t need to be an expert to use it.
                 </p>
               </div>
             </div>

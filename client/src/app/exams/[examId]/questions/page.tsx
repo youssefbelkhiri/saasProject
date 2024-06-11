@@ -78,7 +78,7 @@ const QuestionsPage = () => {
     setIsCreating(true);
   };
 
-  const handleInputChange = (e, index) => {
+  const handleInputChange = (e, index=0) => {
     const { name, value, type } = e.target;
     if (type === "radio" && name === "correctOption") {
       const updatedOptions = selectedQuestion.options.map((option, i) => ({
@@ -342,7 +342,7 @@ const QuestionsPage = () => {
                               id={`option${index}`}
                               name="option_id"
                               value={index}
-                              onChange={(e) => handleInputChange(e, index)}
+                              onChange={(e) => handleInputChange(e)}
                               className="mr-2 w-4 h-4"
                             />
                             <input

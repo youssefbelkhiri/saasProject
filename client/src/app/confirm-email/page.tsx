@@ -1,20 +1,19 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
 const ConfirmEmailPage: React.FC = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token");
     if (token) {
-      confirmEmail(token as string);
+      confirmEmail(token);
     }
-  }, [token]);
+  }, []);
+
   const confirmEmail = async (token: string) => {
     try {
       const response = await axios.post<{ message: string }>(
@@ -28,6 +27,7 @@ const ConfirmEmailPage: React.FC = () => {
       );
     }
   };
+
   return (
     <>
       <section className="relative z-10 overflow-hidden pb-16 pt-36 md:pb-20 lg:pb-28 lg:pt-[180px]">

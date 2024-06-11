@@ -18,6 +18,42 @@ const ProfilePage = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const profileResponse = await axios.get(
+          "http://localhost:3000/api/auth/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          },
+        );
+        const userId = profileResponse.data.id;
+
+        const userResponse = await axios.get(
+          `http://localhost:3000/api/users/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          },
+        );
+
+        const userData = {
+          id: userResponse.data.id || "",
+          first_name: userResponse.data.first_name || "",
+          last_name: userResponse.data.last_name || "",
+          email: userResponse.data.email || "",
+          phone: userResponse.data.phone || "",
+        };
+
+        setUserData(userData);
+      } catch (error) {
+        console.error("Error fetching profile data:", error.response.data);
+        // router.push("/signin");
+      }
+    };
+
     const checkAuthAndFetchProfile = async () => {
       if (!authToken) {
         // router.push("/signin");
@@ -25,44 +61,9 @@ const ProfilePage = () => {
         await fetchProfileData();
       }
     };
+
     checkAuthAndFetchProfile();
   }, [authToken]);
-
-  const fetchProfileData = async () => {
-    try {
-      const profileResponse = await axios.get(
-        "http://localhost:3000/api/auth/profile",
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        },
-      );
-      const userId = profileResponse.data.id;
-
-      const userResponse = await axios.get(
-        `http://localhost:3000/api/users/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        },
-      );
-
-      const userData = {
-        id: userResponse.data.id || "",
-        first_name: userResponse.data.first_name || "",
-        last_name: userResponse.data.last_name || "",
-        email: userResponse.data.email || "",
-        phone: userResponse.data.phone || "",
-      };
-
-      setUserData(userData);
-    } catch (error) {
-      console.error("Error fetching profile data:", error.response.data);
-      // router.push("/signin");
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -96,6 +97,7 @@ const ProfilePage = () => {
       console.error("Error updating profile:", error);
     }
   };
+
   return (
     <>
       <section className="relative z-10 overflow-hidden pb-16 pt-36 md:pb-20 lg:pb-28 lg:pt-[180px]">
