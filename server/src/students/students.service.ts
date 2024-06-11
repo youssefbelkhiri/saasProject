@@ -126,8 +126,10 @@ export class StudentsService {
             user_id: +user_id,
           },
         },
+        studentPapers: true,
       },
     });
+
 
     if (!student) {
       throw new NotFoundException(`Can't find this student : ${id}`);
@@ -136,6 +138,10 @@ export class StudentsService {
     if (!student.groups.some((group) => group.user_id === user_id)) {
       throw new HttpException('Unauthorized', 401);
     }
+
+    await this.prisma.papers.deleteMany({
+      where: { student_id: +id },
+    });
 
     return await this.prisma.students.delete({ where: { student_id: +id } });
   }

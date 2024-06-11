@@ -254,10 +254,11 @@ const CreateQuestionModal = ({
     } else {
       setQuestionData({
         ...questionData,
-        [name]: value,
+        [name]: type === "number" ? Number(value) : value,
       });
     }
   };
+  
 
   const handleAddOption = () => {
     const newOption: CreateOptionDto = {
@@ -318,7 +319,7 @@ const CreateQuestionModal = ({
 
   return (
     <div
-      className={`fixed inset-0 z-10 overflow-y-auto ${isOpen ? "block" : "hidden"}`}
+      className={`fixed inset-0 z-[1000] overflow-y-auto ${isOpen ? "block" : "hidden"}`}
     >
       <div className="flex min-h-screen items-center justify-center">
         <div className="fixed inset-0 bg-gray-500 opacity-75"></div>
@@ -437,6 +438,12 @@ const CreateQuestionModal = ({
               className="w-full rounded border bg-primary p-2 text-white"
             >
               Create
+            </button>
+            <button
+              className="w-full mt-4 rounded bg-red-500 px-4 py-2 text-white"
+              onClick={onClose}
+            >
+              Cancel
             </button>
           </form>
         </div>

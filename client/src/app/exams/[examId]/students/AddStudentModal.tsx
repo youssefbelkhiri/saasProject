@@ -196,59 +196,62 @@ const AddStudentModal = ({ isOpen, onClose, examId }) => {
                   className="text-primary"
                 />
               </div>
-              <table className="mt-4 w-full">
-                <thead>
-                  <tr>
-                    <th className="border px-4 py-2">
-                      <input
-                        type="checkbox"
-                        checked={selectAll}
-                        onChange={toggleSelectAll}
-                        className="h-4 w-4 text-blue-500"
-                      />
-                    </th>
-                    <th className="border px-4 py-2">Student Number</th>
-                    <th className="border px-4 py-2">First Name</th>
-                    <th className="border px-4 py-2">Last Name</th>
-                    <th className="border px-4 py-2">Groups</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Students.map((student) => (
-                    <tr
-                      key={student.student_id}
-                      className={
-                        selectedStudents.includes(student.student_id)
-                          ? "bg-gray-200 dark:bg-gray-500"
-                          : ""
-                      }
-                    >
-                      <td className="border px-4 py-2">
+              <div className="mt-4 h-72 overflow-y-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className="border px-4 py-2">
                         <input
                           type="checkbox"
-                          checked={selectedStudents.includes(
-                            student.student_id,
-                          )}
-                          onChange={() =>
-                            toggleStudentSelection(student.student_id)
-                          }
+                          checked={selectAll}
+                          onChange={toggleSelectAll}
                           className="h-4 w-4 text-blue-500"
                         />
-                      </td>
-                      <td className="border px-4 py-2">
-                        {student.student_number}
-                      </td>
-                      <td className="border px-4 py-2">{student.first_name}</td>
-                      <td className="border px-4 py-2">{student.last_name}</td>
-                      <td className="border px-4 py-2">
-                        {student.groups?.length > 0
-                          ? student.groups.join(", ")
-                          : "No Groups"}
-                      </td>
+                      </th>
+                      <th className="border px-4 py-2">Student Number</th>
+                      <th className="border px-4 py-2">First Name</th>
+                      <th className="border px-4 py-2">Last Name</th>
+                      <th className="border px-4 py-2">Groups</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {Students.map((student) => (
+                      <tr
+                        key={student.student_id}
+                        className={
+                          selectedStudents.includes(student.student_id)
+                            ? "bg-gray-200 dark:bg-gray-500"
+                            : ""
+                        }
+                      >
+                        <td className="border px-4 py-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedStudents.includes(
+                              student.student_id,
+                            )}
+                            onChange={() =>
+                              toggleStudentSelection(student.student_id)
+                            }
+                            className="h-4 w-4 text-blue-500"
+                          />
+                        </td>
+                        <td className="border px-4 py-2">
+                          {student.student_number}
+                        </td>
+                        <td className="border px-4 py-2">{student.first_name}</td>
+                        <td className="border px-4 py-2">{student.last_name}</td>
+                        <td className="border px-4 py-2">
+                          {student.groups?.length > 0
+                            ? student.groups.join(", ")
+                            : "No Groups"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
             </div>
             <div className="mt-4 flex justify-end">
               <button

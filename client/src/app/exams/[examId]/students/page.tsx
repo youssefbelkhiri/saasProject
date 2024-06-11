@@ -100,6 +100,7 @@ const StudentsPage = () => {
     console.log(selectedPapers);
 
     const selectedPaperIds = selectedPapers.map((paper) => paper.paper_id);
+    console.log(selectedPaperIds);
 
     const response = await axios.delete(
       `http://localhost:3000/api/papers/${selectedPaperIds}`,

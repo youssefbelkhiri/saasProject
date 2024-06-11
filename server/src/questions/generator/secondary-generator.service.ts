@@ -27,7 +27,6 @@ export class SecondaryGeneratorService {
                                   "option": option,
                                   "correct": true or false
                               }
-                              
                           ]
                         },
                         the result must start with json format directly do not use ''' json on start of the result

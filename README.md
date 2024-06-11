@@ -31,6 +31,8 @@ Run prisma studop :
 
   `npx prisma migrate dev --name init`
 
+
+cd server ; yarn start --watch
 cd server ; yarn run start
 cd client ; yarn dev
 cd server ; npx prisma studio

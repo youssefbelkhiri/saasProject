@@ -195,4 +195,45 @@ export class ExamService {
 
     return pdfBuffer;
   }
+
+
+  async exportAnswerSheetAll(examId: number) {
+    const exam = await this.prisma.exam.findUnique({
+      where: { exam_id: +examId },
+      include: { questions: true },
+    });
+  
+    const pdfBuffer: Buffer = await new Promise(async (resolve) => {
+      const doc = new PDFDocument({ size: 'LETTER', bufferPages: true });
+  
+      doc.text('Exam Title: ' + exam.name, { align: 'center', fontSize: 20 });
+      doc.text('Time: ' + exam.exam_time + ' min', {
+        align: 'center',
+        fontSize: 12,
+      });
+      doc.text('Total Points: ' + exam.total_point, {
+        align: 'center',
+        fontSize: 12,
+      });
+      doc.moveDown();
+  
+      for (const question of exam.questions) {
+        doc.text('Answer of Question ' + question.questionOrder + ' is : ');
+        doc.moveDown();
+      }
+  
+      doc.end();
+  
+      const buffer = [];
+      doc.on('data', buffer.push.bind(buffer));
+      doc.on('end', () => {
+        const data = Buffer.concat(buffer);
+        resolve(data);
+      });
+    });
+  
+    return pdfBuffer;
+  }
+  
+  
 }
