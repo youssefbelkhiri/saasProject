@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,21 @@ import { useAuth } from "../../app/authMiddleware";
 
 const SigninPage = () => {
   const router = useRouter();
-  const { authToken, logIn } = useAuth();
+  const { logIn } = useAuth();
+  const authToken = localStorage.getItem("authToken");
+
+  // const [authToken, setAuthToken] = useState(null);
+
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     const token = localStorage.getItem("authToken");
+  //     if (token !== null && token !== undefined) {
+  //       setAuthToken(token);
+  //     }
+  //   }
+  // }, []);
+  // console.log("authToken", authToken)
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",

@@ -75,17 +75,31 @@ export class ExamService {
   async exportExam(id: number): Promise<Buffer> {
     const exam = await this.prisma.exam.findUnique({
       where: { exam_id: +id },
-      include: { questions: true },
+      include: {
+        questions: {
+          orderBy: {
+            questionOrder: 'asc',
+          },
+          include: {
+            options: {
+              orderBy: {
+                optionOrder: 'asc',
+              },
+            },
+          },
+        },
+      },
     });
+
     const pdfBuffer: Buffer = await new Promise(async (resolve) => {
       const doc = new PDFDocument({ size: 'LETTER', bufferPages: true });
 
       doc.text('Exam Title: ' + exam.name, { align: 'center', fontSize: 20 });
-      doc.text('Instructions: ' + exam.description, {
-        align: 'center',
-        fontSize: 12,
-      });
-      doc.text('Time: ' + exam.exam_time + ' hours', {
+      // doc.text('Instructions: ' + exam.description, {
+      //   align: 'center',
+      //   fontSize: 12,
+      // });
+      doc.text('Time: ' + exam.exam_time + ' min', {
         align: 'center',
         fontSize: 12,
       });
@@ -106,6 +120,9 @@ export class ExamService {
         });
         const options = await this.prisma.options.findMany({
           where: { questionId: +question.question_id },
+          orderBy: {
+            optionOrder: 'asc',
+          },
         });
         doc.moveDown();
         doc.font('Helvetica');
@@ -200,7 +217,13 @@ export class ExamService {
   async exportAnswerSheetAll(examId: number) {
     const exam = await this.prisma.exam.findUnique({
       where: { exam_id: +examId },
-      include: { questions: true },
+      include: { 
+        questions: {
+          orderBy: {
+            questionOrder: 'asc',
+          },
+        },
+      },
     });
   
     const pdfBuffer: Buffer = await new Promise(async (resolve) => {

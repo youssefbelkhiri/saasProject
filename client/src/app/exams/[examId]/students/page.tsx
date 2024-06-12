@@ -51,22 +51,6 @@ const StudentsPage = () => {
         console.log(filteredStudents);
         setStudents(filteredStudents);
 
-        // const paperData = await response.json();
-        // const studentIds = paperData.studentIds;
-
-        // const studentsResponse = await fetch(
-        //   `/api/students?ids=${studentIds.join(",")}`,
-        // );
-        // const studentsData = await studentsResponse.json();
-        // setStudents(studentsData);
-
-        // const groupsResponse = await fetch(
-        //   `/api/groups?studentIds=${studentIds.join(",")}`,
-        // );
-        // const groupsData = await groupsResponse.json();
-        // setGroups(groupsData);
-
-        // setIsLoading(false);
       } catch (error) {
         console.error("Error fetching paper data:", error);
       }
@@ -76,12 +60,6 @@ const StudentsPage = () => {
       fetchPaperData();
     }
   }, [examId]);
-
-  // const filteredStudents = students.filter((student) =>
-  //   `${student.first_name} ${student.last_name}`
-  //     .toLowerCase()
-  //     .includes(searchQuery.toLowerCase()),
-  // );
 
   const openAddStudentModal = () => {
     setIsAddStudentModalOpen(true);

@@ -7,7 +7,20 @@ import { useRouter } from "next/navigation";
 
 const ProfilePage = () => {
   const router = useRouter();
-  const { authToken } = useAuth();
+  // const { authToken } = useAuth();
+
+  const [authToken, setAuthToken] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("authToken");
+      if (token !== null && token !== undefined) {
+        setAuthToken(token);
+      }
+    }
+  }, []);
+  console.log("authToken", authToken)
+
   const [userData, setUserData] = useState({
     id: "",
     first_name: "",

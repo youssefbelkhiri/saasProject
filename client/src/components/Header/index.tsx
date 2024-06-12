@@ -12,7 +12,21 @@ import { useAuth } from "../../app/authMiddleware";
 
 const Header = () => {
   const router = useRouter();
-  const { authToken, logOut } = useAuth();
+  const { logOut } = useAuth();
+  // const authToken = localStorage.getItem("authToken");
+
+  const [authToken, setAuthToken] = useState(null);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("authToken");
+      if (token !== null && token !== undefined) {
+        setAuthToken(token);
+      }
+    }
+  }, []);
+  
+  console.log("authToken", authToken);
+  
 
   // Navbar toggle
   const [navbarOpen, setNavbarOpen] = useState(false);
@@ -41,7 +55,7 @@ const Header = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (authToken) {
+      if (authToken != null) {
         try {
           const response = await axios.get("http://localhost:3000/api/auth/profile", {
             headers: {
@@ -81,7 +95,12 @@ const Header = () => {
   const handleSignOut = () => {
     // localStorage.removeItem("authToken");
     // router.push("/signin");
-    logOut();
+    // logOut();
+    localStorage.removeItem('authToken');
+    setAuthToken(null);
+    // setUserId(null);
+    // isLoggedIn = false;
+    router.push('/signin');
   };
 
   return (
@@ -151,7 +170,7 @@ const Header = () => {
                   }`}
                 >
                   <ul className="block lg:flex lg:space-x-12">
-                    {authToken ? (
+                    {authToken != null ? (
                       userMenuData.map((menuItem, index) => (
                         <li key={index} className="group relative">
                           <Link
@@ -186,7 +205,7 @@ const Header = () => {
                 </nav>
               </div>
               <div className="flex items-center justify-end pr-16 lg:pr-0">
-                {authToken ? (
+                {authToken != null ? (
                   <div className="relative">
                     <button
                       id="dropdownAvatarNameButton"
